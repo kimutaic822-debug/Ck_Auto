@@ -1,0 +1,131 @@
+package com.ckauto.app
+
+import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.NotificationCompat
+import android.os.Bundle
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatActivity
+import androidx.webkit.WebViewAssetLoader
+import org.json.JSONObject
+
+class MainActivity : AppCompatActivity() {
+    lateinit var web: WebView
+    private var fileCb: ValueCallback<Array<Uri>>? = null
+    private val picker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+        fileCb?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(r.resultCode, r.data))
+        fileCb = null
+    }
+
+    companion object {
+        var ref: MainActivity? = null
+        fun notifyAsk(c: Context, text: String) {
+            val nm = c.getSystemService(NotificationManager::class.java)
+            if (Build.VERSION.SDK_INT >= 26) {
+                nm.createNotificationChannel(NotificationChannel("ck_ask", "Confirmations", NotificationManager.IMPORTANCE_HIGH))
+            }
+            val pi = PendingIntent.getActivity(c, 2, Intent(c, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
+            val n = NotificationCompat.Builder(c, "ck_ask")
+                .setContentTitle("CK Auto: confirm recipient")
+                .setContentText(text.replace("\n", " "))
+                .setSmallIcon(android.R.drawable.stat_notify_sync)
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .build()
+            try {
+                nm.notify(2, n)
+            } catch (e: SecurityException) {
+            }
+        }
+
+        fun deliver() {
+            val w = ref?.web ?: return
+            w.post { w.evaluateJavascript("window.drainSms&&drainSms()", null) }
+        }
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    override fun onCreate(b: Bundle?) {
+        super.onCreate(b)
+        ref = this
+        web = WebView(this)
+        setContentView(web)
+        val loader = WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+            .build()
+        web.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
+                loader.shouldInterceptRequest(request.url)
+        }
+        web.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
+                v: WebView,
+                cb: ValueCallback<Array<Uri>>,
+                p: WebChromeClient.FileChooserParams
+            ): Boolean {
+                fileCb?.onReceiveValue(null)
+                fileCb = cb
+                return try {
+                    picker.launch(p.createIntent())
+                    true
+                } catch (e: Exception) {
+                    fileCb = null
+                    false
+                }
+            }
+        }
+        web.settings.javaScriptEnabled = true
+        web.settings.domStorageEnabled = true
+        web.addJavascriptInterface(Bridge(this), "Android")
+        UssdEngine.onDone = { id, ok, text ->
+            runOnUiThread {
+                web.evaluateJavascript(
+                    "window.onUssdDone(" + JSONObject.quote(id) + "," + ok + "," + JSONObject.quote(text) + ")", null
+                )
+            }
+        }
+        UssdEngine.onAsk = { id, text ->
+            runOnUiThread {
+                try {
+                    startActivity(Intent(this, MainActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+                } catch (e: Exception) {
+                }
+                notifyAsk(this, text)
+                web.evaluateJavascript(
+                    "window.onUssdAsk(" + JSONObject.quote(id) + "," + JSONObject.quote(text) + ")", null
+                )
+            }
+        }
+        web.loadUrl("https://appassets.androidplatform.net/assets/index.html")
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                web.evaluateJavascript("nativeBack()") { r -> if (r != "true") moveTaskToBack(true) }
+            }
+        })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        web.evaluateJavascript("window.drainSms&&drainSms();window.refreshSetup&&refreshSetup()", null)
+    }
+
+    override fun onDestroy() {
+        if (ref === this) ref = null
+        super.onDestroy()
+    }
+}
