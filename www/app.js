@@ -2,32 +2,28 @@ function showToast(msg, type) {
   var old = document.querySelector('.toast-message');
   if (old) old.remove();
   var t = document.createElement('div');
-  t.className = 'toast-message ' + (type || 'green');
+  t.className = 'toast-message' + (type === 'red' ? ' red' : '');
   t.innerText = msg;
   document.body.appendChild(t);
-  setTimeout(function(){ t.classList.add('show'); }, 50);
-  setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.remove(); }, 400); }, 3000);
+  setTimeout(function(){ t.remove(); }, 3200);
 }
 
 function checkAuth() {
   var loggedIn = localStorage.getItem('ck_logged_in') === 'true';
   var setupDone = localStorage.getItem('ck_setup_done') === 'true';
-  var authScreen = document.getElementById('auth-screen');
-  var setupScreen = document.getElementById('setup-screen');
-  var mainApp = document.getElementById('main-app');
   if (!loggedIn) {
-    authScreen.style.display = 'flex';
-    setupScreen.classList.remove('active');
-    mainApp.style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('setup-screen').classList.remove('active');
+    document.getElementById('main-app').style.display = 'none';
   } else if (!setupDone) {
-    authScreen.style.display = 'none';
-    setupScreen.classList.add('active');
-    mainApp.style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('setup-screen').classList.add('active');
+    document.getElementById('main-app').style.display = 'none';
     loadSetupState();
   } else {
-    authScreen.style.display = 'none';
-    setupScreen.classList.remove('active');
-    mainApp.style.display = 'block';
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('setup-screen').classList.remove('active');
+    document.getElementById('main-app').style.display = 'block';
     initApp();
   }
 }
@@ -44,22 +40,22 @@ function showLogin() {
 }
 
 function validatePassword(p) {
-  if (!p || p.length < 8) return 'Password must be 8+ characters';
-  if (!/[a-zA-Z]/.test(p)) return 'Must contain a letter';
-  if (!/[0-9]/.test(p)) return 'Must contain a number';
+  if (!p || p.length < 8) return 'Password must be at least 8 characters';
+  if (!/[a-zA-Z]/.test(p)) return 'Password must contain a letter';
+  if (!/[0-9]/.test(p)) return 'Password must contain a number';
   return null;
 }
 
 function login() {
   var id = document.getElementById('loginPhone').value.trim();
   var pass = document.getElementById('loginPassword').value;
-  if (!id || !pass) return showToast('Fill all fields', 'red');
+  if (!id || !pass) return showToast('Please fill in all fields', 'red');
   var user = JSON.parse(localStorage.getItem('ck_user') || 'null');
-  if (!user) return showToast('No account. Sign Up first.', 'red');
-  if (user.phone !== id && user.email !== id) return showToast('Account not found', 'red');
-  if (user.password !== pass) return showToast('Incorrect password', 'red');
+  if (!user) return showToast('No account found. Please Sign Up first.', 'red');
+  if (user.phone !== id && user.email !== id) return showToast('Account not found for that phone/email', 'red');
+  if (user.password !== pass) return showToast('Incorrect password. Try again.', 'red');
   localStorage.setItem('ck_logged_in', 'true');
-  showToast('Welcome back, ' + user.name.split(' ')[0] + '!', 'green');
+  showToast('Login successful! Welcome ' + user.name.split(' ')[0], 'green');
   setTimeout(checkAuth, 800);
 }
 
@@ -70,14 +66,17 @@ function signup() {
   var email = document.getElementById('signupEmail').value.trim();
   var pass = document.getElementById('signupPassword').value;
   var confirm = document.getElementById('signupPasswordConfirm').value;
-  if (!name || !phone || !email || !pass) return showToast('Fill all required fields', 'red');
+
+  if (!name || !phone || !email || !pass) return showToast('Please fill in all required fields', 'red');
   var pe = validatePassword(pass);
   if (pe) return showToast(pe, 'red');
   if (pass !== confirm) return showToast('Passwords do not match', 'red');
-  if (!email.includes('@gmail.com') && !email.includes('@outlook.com')) return showToast('Use @gmail or @outlook', 'red');
+  if (!email.includes('@gmail.com') && !email.includes('@outlook.com')) return showToast('Email must end with @gmail.com or @outlook.com', 'red');
+  if (phone.length < 10) return showToast('Please enter a valid phone number', 'red');
+
   localStorage.setItem('ck_user', JSON.stringify({ name: name, business: business, phone: phone, email: email, password: pass }));
   localStorage.setItem('ck_logged_in', 'true');
-  showToast('Account created. Welcome ' + name + '!', 'green');
+  showToast('Account created successfully! Welcome, ' + name + '!', 'green');
   setTimeout(checkAuth, 900);
 }
 
@@ -85,7 +84,6 @@ function backToAuth() {
   localStorage.removeItem('ck_logged_in');
   checkAuth();
 }
-
 function confirmLogout() {
   if (confirm('Log out? Your data stays saved.')) {
     localStorage.removeItem('ck_logged_in');
@@ -93,16 +91,14 @@ function confirmLogout() {
   }
 }
 
-/* SETUP WIZARD */
+/* SETUP */
 var setupState = { permissions: false, ussd: false, battery: false };
-
 function loadSetupState() {
   setupState.permissions = localStorage.getItem('ck_setup_perms') === 'true';
   setupState.ussd = localStorage.getItem('ck_setup_ussd') === 'true';
   setupState.battery = localStorage.getItem('ck_setup_battery') === 'true';
   updateSetupUI();
 }
-
 function updateSetupUI() {
   var bp = document.getElementById('btn-permissions');
   var bu = document.getElementById('btn-ussd');
@@ -112,11 +108,10 @@ function updateSetupUI() {
   if (setupState.battery) { bb.innerText = '✓ Done'; bb.classList.add('done'); } else { bb.innerText = 'Allow'; bb.classList.remove('done'); }
   document.getElementById('continue-btn').disabled = !(setupState.permissions && setupState.ussd && setupState.battery);
 }
-
-async function setupRequestPermissions() {
+function setupRequestPermissions() {
   try {
-    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins.LocalNotifications) {
-      await Capacitor.Plugins.LocalNotifications.requestPermissions();
+    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) {
+      Capacitor.Plugins.LocalNotifications.requestPermissions();
     }
   } catch(e) { console.log(e); }
   setupState.permissions = true;
@@ -124,41 +119,31 @@ async function setupRequestPermissions() {
   updateSetupUI();
   showToast('Permissions granted', 'green');
 }
-
 function setupEnableUSSD() {
-  alert('Enable CK Auto in:\n\nSettings > Accessibility > CK Auto Automation');
   setupState.ussd = true;
   localStorage.setItem('ck_setup_ussd', 'true');
   updateSetupUI();
-  showToast('USSD enabled', 'green');
+  showToast('USSD service enabled', 'green');
 }
-
 function setupEnableBattery() {
-  alert('Set CK Auto to Unrestricted in:\n\nSettings > Battery > Battery Optimization');
   setupState.battery = true;
   localStorage.setItem('ck_setup_battery', 'true');
   updateSetupUI();
   showToast('Battery unrestricted', 'green');
 }
-
 function finishSetup() {
-  if (!(setupState.permissions && setupState.ussd && setupState.battery)) return showToast('Complete all 3', 'red');
+  if (!(setupState.permissions && setupState.ussd && setupState.battery)) return showToast('Complete all 3 first', 'red');
   localStorage.setItem('ck_setup_done', 'true');
-  showToast('Setup complete!', 'green');
+  showToast('Setup complete! Welcome to CK Auto.', 'green');
   setTimeout(checkAuth, 900);
 }
 
-/* APP STATE */
+/* APP */
 var CK = {
   automationPower: localStorage.getItem('ck_automation') === '1',
   currentSellTab: 'data',
   selectedOffer: null,
-  transactions: JSON.parse(localStorage.getItem('ck_txns') || '[]'),
-  offers: JSON.parse(localStorage.getItem('ck_offers') || 'null') || getDefaultOffers()
-};
-
-function getDefaultOffers() {
-  return {
+  offers: {
     data: [
       { id: 'd1', name: 'Sh20=1GB,1hr', price: 19 },
       { id: 'd2', name: 'Sh20=250MB,24hr', price: 20 },
@@ -167,8 +152,8 @@ function getDefaultOffers() {
       { id: 'd5', name: 'Sh99=1.5GB,24hr', price: 99 },
       { id: 'd6', name: 'Sh55=1GB till midnight', price: 55 }
     ], sms: [], advanced: []
-  };
-}
+  }
+};
 
 function initApp() {
   var user = JSON.parse(localStorage.getItem('ck_user') || '{}');
@@ -179,20 +164,13 @@ function initApp() {
     setText('profileBusinessName', user.business || 'Not set');
     setText('profilePhone', user.phone || 'Not set');
     setText('profileEmail', user.email || 'Not set');
-    setVal('editName', user.name);
-    setVal('editBusiness', user.business === 'Not set' ? '' : user.business);
-    setVal('editPhone', user.phone || '');
   }
   var toggle = document.getElementById('automationToggle');
   if (toggle) { toggle.checked = CK.automationPower; updateToggleUI(CK.automationPower); }
   renderOffers();
-  renderRecentActivity();
 }
-
 function setText(id, v) { var e = document.getElementById(id); if (e) e.innerText = v; }
-function setVal(id, v) { var e = document.getElementById(id); if (e) e.value = v; }
 
-/* NAV */
 function toggleDrawer() {
   document.getElementById('sideDrawer').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('active');
@@ -215,7 +193,6 @@ function closePage() {
   document.querySelectorAll('.subpage').forEach(function(p) { p.classList.remove('active'); });
 }
 
-/* AUTOMATION */
 function toggleAutomation(el) {
   CK.automationPower = el.checked;
   localStorage.setItem('ck_automation', CK.automationPower ? '1' : '0');
@@ -230,7 +207,6 @@ function updateToggleUI(isOn) {
   else { st.innerText = 'App is OFF (0)'; st.classList.add('off'); if (c) c.classList.add('greyed-out'); }
 }
 
-/* HIDE/UNHIDE */
 function toggleVisibility(id, iconEl) {
   var el = document.getElementById(id);
   if (!el) return;
@@ -245,11 +221,9 @@ function toggleVisibility(id, iconEl) {
   }
 }
 
-/* SELL */
 function switchSellTab(tab, el) {
   CK.currentSellTab = tab;
-  var btns = document.querySelectorAll('#tab-sell .tab-btn');
-  btns.forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('#tab-sell .tab-btn').forEach(function(b) { b.classList.remove('active'); });
   if (el) el.classList.add('active');
   renderOffers();
 }
@@ -257,7 +231,7 @@ function renderOffers() {
   var list = document.getElementById('offerList');
   if (!list) return;
   var offers = CK.offers[CK.currentSellTab] || [];
-  if (!offers.length) { list.innerHTML = '<p style="color:#888;padding:10px">No offers.</p>'; return; }
+  if (!offers.length) { list.innerHTML = '<p style="color:#888;padding:10px">No offers yet.</p>'; return; }
   list.innerHTML = offers.map(function(o) {
     return '<div class="offer-item ' + (CK.selectedOffer === o.id ? 'selected' : '') + '" onclick="selectOffer(\'' + o.id + '\')"><span>' + o.name + '</span><b>Ksh ' + o.price + '</b></div>';
   }).join('');
@@ -266,34 +240,18 @@ function selectOffer(id) { CK.selectedOffer = id; renderOffers(); }
 function confirmSale() {
   var phone = document.getElementById('customerNumber').value.trim();
   if (!phone) return showToast('Enter customer number', 'red');
-  if (!CK.selectedOffer) return showToast('Select an offer', 'red');
+  if (!CK.selectedOffer) return showToast('Select an offer first', 'red');
   var offer = (CK.offers[CK.currentSellTab] || []).find(function(o){ return o.id === CK.selectedOffer; });
-  if (confirm('Confirm:\n\n' + offer.name + '\nTo: ' + phone + '\nKsh ' + offer.price)) {
+  if (confirm('Confirm Sale:\n\n' + offer.name + '\nTo: ' + phone + '\nPrice: Ksh ' + offer.price)) {
     dialUSSD('*180*5*2*' + phone + '#');
   }
 }
-
-function renderRecentActivity() {
-  var list = document.getElementById('recentActivityList');
-  if (!list) return;
-  if (!CK.transactions.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:20px">No activity yet.</p>'; return; }
-  list.innerHTML = CK.transactions.slice(0, 6).map(function(t) {
-    return '<div class="activity-item"><div class="act-left"><h4>' + (t.name || 'CUSTOMER') + '</h4><p>' + t.phone + '</p></div><div class="act-right"><h4>Ksh ' + t.amount + '</h4><span class="badge ' + (t.status === 'SUCCESS' ? 'success' : 'failed') + '">' + t.status + '</span></div></div>';
-  }).join('');
-}
-
-/* SEND MONEY */
 function executeSendMoney() {
   var amt = document.getElementById('sendAmount').value;
   var pin = document.getElementById('sendPin').value;
   if (!amt || !pin) return showToast('Fill amount and PIN', 'red');
-  var type = document.getElementById('sendType').value;
-  var code = '*334#';
-  if (type === 'till') code = '*234*2*5822712*2*3*' + document.getElementById('sendPhone').value + '*' + amt + '#';
-  dialUSSD(code);
+  dialUSSD('*334#');
 }
-
-/* TOKENS */
 function buyTokens() {
   var amt = parseInt(document.getElementById('tokenAmount').value);
   if (!amt || amt < 10) return showToast('Minimum Ksh 10', 'red');
@@ -316,24 +274,12 @@ function checkAirtime() {
     if (el) el.innerText = 'Ksh 74.53';
   }, 1500);
 }
-
-/* MISC */
 function saveEmergency() { if (confirm('Save emergency settings?')) showToast('Saved', 'green'); }
-function saveProfile() {
-  var user = JSON.parse(localStorage.getItem('ck_user') || '{}');
-  user.name = document.getElementById('editName').value;
-  user.business = document.getElementById('editBusiness').value || 'Not set';
-  user.phone = document.getElementById('editPhone').value;
-  localStorage.setItem('ck_user', JSON.stringify(user));
-  showToast('Profile saved', 'green');
-  initApp();
-}
-function changePhoto() { showToast('Requesting permission...', 'green'); }
 function resetApp() { if (confirm('Reset all data?')) { localStorage.clear(); location.reload(); } }
 
 function dialUSSD(code) {
   console.log('[USSD] Would dial:', code);
-  alert('Dialing: ' + code + '\n\n(Automation runs in the APK with the Accessibility Service enabled)');
+  showToast('Dialing ' + code + '...', 'green');
 }
 
 document.addEventListener('DOMContentLoaded', checkAuth);
