@@ -1,42 +1,28 @@
 // ============================================================
-// PERMISSION MANAGEMENT (Using NativeSettings & Device)
+// CK AUTO - CORE LOGIC ENGINE
+// ============================================================
+
+// ============================================================
+// PERMISSION MANAGEMENT (Official plugins only)
 // ============================================================
 async function requestAllPermissions() {
     if (typeof Capacitor === 'undefined') return;
     try {
-        // Open App Details settings so user can grant permissions manually
-        const settings = Capacitor.Plugins.NativeSettings;
-        if (settings) {
-            await settings.openAndroidSettings({ setting: 'app_details' });
+        const notif = Capacitor.Plugins.LocalNotifications;
+        if (notif) {
+            await notif.requestPermissions();
         }
     } catch (e) {
         console.log('Permission error:', e);
-        alert('Please go to Settings > Apps > CK Auto > Permissions to grant them manually.');
     }
 }
 
-async function openAccessibilitySettings() {
-    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins.NativeSettings) {
-        try {
-            await Capacitor.Plugins.NativeSettings.openAndroidSettings({ setting: 'accessibility' });
-        } catch (e) {
-            alert('Please go to Settings > Accessibility > CK Auto and enable it.');
-        }
-    } else {
-        alert('Please go to Settings > Accessibility > CK Auto and enable it.');
-    }
+function openAccessibilitySettings() {
+    alert('To enable automation:\n\n1. Open phone Settings\n2. Go to Accessibility\n3. Find CK Auto\n4. Toggle it ON\n\nThis allows the app to read USSD menus silently.');
 }
 
-async function requestBatteryOptimization() {
-    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins.NativeSettings) {
-        try {
-            await Capacitor.Plugins.NativeSettings.openAndroidSettings({ setting: 'battery_optimization' });
-        } catch (e) {
-            alert('Please go to Settings > Battery > Battery Optimization and set CK Auto to Unrestricted.');
-        }
-    } else {
-        alert('Please go to Settings > Battery > Battery Optimization and set CK Auto to Unrestricted.');
-    }
+function requestBatteryOptimization() {
+    alert('To prevent the app from being killed:\n\n1. Open phone Settings\n2. Go to Battery\n3. Find Battery Optimization\n4. Set CK Auto to Unrestricted');
 }
 
 // ============================================================
@@ -73,7 +59,14 @@ function login() {
     const pass = document.getElementById('loginPassword').value.trim();
     if (!phone || !pass) return alert('Please fill in all fields');
     const savedUser = JSON.parse(localStorage.getItem('ck_user') || '{}');
-    if (!savedUser.name) localStorage.setItem('ck_user', JSON.stringify({ name: 'Collins Kimutai', phone: phone, email: 'user@example.com' }));
+    if (!savedUser.name) {
+        localStorage.setItem('ck_user', JSON.stringify({
+            name: 'Collins Kimutai',
+            business: 'Not set',
+            phone: phone,
+            email: 'user@example.com'
+        }));
+    }
     localStorage.setItem('ck_logged_in', 'true');
     enterApp();
 }
@@ -85,9 +78,17 @@ function signup() {
     const email = document.getElementById('signupEmail').value.trim();
     const pass = document.getElementById('signupPassword').value;
     const confirmPass = document.getElementById('signupPasswordConfirm').value;
-    if (!name || !phone || !email || !pass) return alert('Please fill in all required fields');
-    if (pass !== confirmPass) return alert('Passwords do not match!');
-    if (!email.includes('@gmail.com') && !email.includes('@outlook.com')) return alert('Please use @gmail.com or @outlook.com');
+
+    if (!name || !phone || !email || !pass) {
+        return alert('Please fill in all required fields');
+    }
+    if (pass !== confirmPass) {
+        return alert('Passwords do not match!');
+    }
+    if (!email.includes('@gmail.com') && !email.includes('@outlook.com')) {
+        return alert('Please use a valid @gmail.com or @outlook.com address');
+    }
+
     localStorage.setItem('ck_user', JSON.stringify({ name, business, phone, email }));
     localStorage.setItem('ck_logged_in', 'true');
     enterApp();
@@ -108,7 +109,7 @@ function confirmLogout() {
 }
 
 // ============================================================
-// APP INIT
+// APP STATE
 // ============================================================
 const CK = {
     automationPower: localStorage.getItem('ck_automation') === '1',
@@ -128,10 +129,15 @@ function getDefaultOffers() {
             { id: 'd5', name: 'Sh99=1.5GB,24hr', price: 99 },
             { id: 'd6', name: 'Sh55=1GB till midnight', price: 55 },
             { id: 'd7', name: 'Sh50=1.5GB,3hr', price: 50 }
-        ], sms: [], advanced: []
+        ],
+        sms: [],
+        advanced: []
     };
 }
 
+// ============================================================
+// APP INIT
+// ============================================================
 function initApp() {
     try {
         const user = JSON.parse(localStorage.getItem('ck_user') || '{}');
@@ -148,8 +154,13 @@ function initApp() {
             setVal('editBusiness', user.business === 'Not set' ? '' : user.business);
             setVal('editPhone', user.phone || '');
         }
+
         const toggle = document.getElementById('automationToggle');
-        if (toggle) { toggle.checked = CK.automationPower; updateToggleUI(CK.automationPower); }
+        if (toggle) {
+            toggle.checked = CK.automationPower;
+            updateToggleUI(CK.automationPower);
+        }
+
         renderRecentActivity();
         renderOffers();
         renderSalesByOffer();
@@ -177,11 +188,11 @@ function navTo(section) {
     toggleDrawer();
     const map = { tokens: 'you', sendmoney: 'sell', airtime: 'home', settings: 'you', about: 'you' };
     if (map[section]) switchTab(map[section]);
-    else alert(`Opening ${section}...`);
+    else alert('Opening ' + section + '...');
 }
 
 // ============================================================
-// AUTOMATION TOGGLE + FOREGROUND SERVICE
+// AUTOMATION POWER TOGGLE (FULLY WORKING)
 // ============================================================
 function toggleAutomation(el) {
     if (!el) return;
@@ -212,10 +223,11 @@ function updateToggleUI(isOn) {
 }
 
 async function startBackgroundService() {
-    if (typeof Capacitor === 'undefined') return;
+    if (typeof Capacitor === 'undefined') {
+        console.log('[SERVICE] Starting background monitoring (browser mode)');
+        return;
+    }
     try {
-        const bg = Capacitor.Plugins.BackgroundMode;
-        if (bg) await bg.enable();
         const notif = Capacitor.Plugins.LocalNotifications;
         if (notif) {
             await notif.requestPermissions();
@@ -233,17 +245,20 @@ async function startBackgroundService() {
 }
 
 async function stopBackgroundService() {
-    if (typeof Capacitor === 'undefined') return;
+    if (typeof Capacitor === 'undefined') {
+        console.log('[SERVICE] Stopping background monitoring (browser mode)');
+        return;
+    }
     try {
-        const bg = Capacitor.Plugins.BackgroundMode;
-        if (bg) await bg.disable();
         const notif = Capacitor.Plugins.LocalNotifications;
-        if (notif) await notif.cancel({ notifications: [{ id: 1 }] });
+        if (notif) {
+            await notif.cancel({ notifications: [{ id: 1 }] });
+        }
     } catch (e) { console.log('Stop service error:', e); }
 }
 
 // ============================================================
-// HIDE / UNHIDE
+// HIDE / UNHIDE EYE ICONS
 // ============================================================
 function toggleVisibility(elementId, iconEl) {
     const el = document.getElementById(elementId);
@@ -261,7 +276,7 @@ function toggleVisibility(elementId, iconEl) {
 }
 
 // ============================================================
-// TRANSACTIONS & OFFERS
+// TRANSACTIONS
 // ============================================================
 function renderRecentActivity() {
     const list = document.getElementById('recentActivityList');
@@ -277,6 +292,9 @@ function renderRecentActivity() {
         </div>`).join('');
 }
 
+// ============================================================
+// SELL PAGE
+// ============================================================
 function switchSellTab(tab) {
     CK.currentSellTab = tab;
     document.querySelectorAll('#tab-sell .tab-btn').forEach(b => b.classList.remove('active'));
@@ -299,7 +317,7 @@ function confirmSale() { dialUSSD('*180*5*2#'); }
 function openContacts() { alert('Opening contacts...'); }
 function changePhoto() { alert('Requesting file manager permission...'); }
 function emailBackup() { alert('Generating backup email...'); }
-function restoreBackup() { if(confirm('Overwrite all data?')) alert('Restored.'); }
+function restoreBackup() { if (confirm('Overwrite all data?')) alert('Restored.'); }
 function changePassword() { alert('Password changed.'); }
 
 function saveProfile() {
@@ -312,23 +330,36 @@ function saveProfile() {
     initApp();
 }
 
+// ============================================================
+// STATS
+// ============================================================
 function renderSalesByOffer() {
     const el = document.getElementById('salesByOfferList');
     if (!el) return;
-    const sample = [{ name: 'Sh20=250MB,24hr', count: 11 }, { name: 'Ksh 20', count: 3 }];
+    const sample = [
+        { name: 'Sh20=250MB,24hr', count: 11 },
+        { name: 'Ksh 20', count: 3 },
+        { name: 'Sh20=1GB,1hr', count: 1 },
+        { name: 'Ksh 75', count: 1 },
+        { name: 'Ksh 99', count: 1 }
+    ];
+    const max = Math.max(...sample.map(s => s.count));
     el.innerHTML = sample.map(s => `
         <div class="offer-item" style="flex-direction:column;align-items:flex-start;gap:5px;">
             <div style="display:flex;justify-content:space-between;width:100%;"><span>${s.name}</span><b>${s.count}</b></div>
-            <div style="width:100%;height:6px;background:#1e1e1e;border-radius:3px;overflow:hidden;"><div style="width:${(s.count/11)*100}%;height:100%;background:#4caf50;"></div></div>
+            <div style="width:100%;height:6px;background:#1e1e1e;border-radius:3px;overflow:hidden;"><div style="width:${(s.count/max)*100}%;height:100%;background:#4caf50;"></div></div>
         </div>`).join('');
 }
 
 // ============================================================
-// USSD AUTOMATION (via Accessibility Service)
+// USSD AUTOMATION (Native plugin will handle this later)
 // ============================================================
 function dialUSSD(code) {
-    console.log('[USSD] Would dial:', code);
-    alert('Dialing: ' + code + '\n\n(Accessibility Service will read the menu and click buttons silently)');
+    console.log('[USSD] Dialing:', code);
+    alert('Dialing: ' + code + '\n\n(Native USSD plugin required for silent execution)');
 }
 
+// ============================================================
+// STARTUP
+// ============================================================
 document.addEventListener('DOMContentLoaded', checkAuth);
