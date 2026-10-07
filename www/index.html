@@ -12,7 +12,7 @@ body{background:#121212;color:#fff;padding-bottom:70px;min-height:100vh}
 .auth-card{background:#1e1e1e;padding:30px 20px;border-radius:12px;width:100%;max-width:400px;border:1px solid #2a4a33}
 .auth-card h2{color:#fff;text-align:center;margin-bottom:20px}
 .auth-card p{color:#aaa;text-align:center;font-size:13px;margin-top:15px}
-.auth-card a{color:#4caf50;cursor:pointer}
+.auth-card a{color:#4caf50;cursor:pointer;font-weight:bold}
 .app-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#1a2f22;position:sticky;top:0;z-index:100}
 .header-left{display:flex;align-items:center;gap:10px}
 .app-header h1{color:#fff;font-size:20px}
@@ -61,7 +61,6 @@ input:checked+.slider:before{transform:translateX(26px)}
 .input-group label{display:block;font-size:12px;color:#aaa;margin-bottom:5px}
 .input-group input,.input-group textarea,.input-group select{width:100%;background:#1e1e1e;border:1px solid #333;color:#fff;padding:12px;border-radius:8px;font-size:14px;outline:none}
 .input-group input:focus{border-color:#4caf50}
-.search-bar{width:100%;background:#1e1e1e;border:1px solid #333;color:#fff;padding:12px;border-radius:8px;margin-bottom:15px;outline:none}
 .tabs-header{display:flex;gap:10px;margin-bottom:15px}
 .tab-btn{background:#1e1e1e;color:#aaa;border:none;padding:8px 15px;border-radius:20px;cursor:pointer}
 .tab-btn.active{background:#1a2f22;color:#4caf50;border:1px solid #4caf50}
@@ -148,10 +147,8 @@ input:checked+.slider:before{transform:translateX(26px)}
 .continue-btn:disabled{background:#2a4a33;color:#5a7a63;cursor:not-allowed}
 .setup-note{text-align:center;color:#666;font-size:11px;margin-top:15px;padding:0 20px;line-height:1.5}
 .greyed-out{opacity:.4}
-.toast-message{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-120px);padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;z-index:99999;max-width:90%;text-align:center;transition:transform .4s;color:#fff}
-.toast-message.show{transform:translateX(-50%) translateY(0)}
-.toast-message.green{background:#2e7d32;border-left:5px solid #4caf50}
-.toast-message.red{background:#c0392b;border-left:5px solid #e74c3c}
+.toast-message{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;z-index:99999;max-width:85%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.5);color:#fff;background:#2e7d32}
+.toast-message.red{background:#c0392b}
 </style>
 </head>
 <body>
@@ -169,11 +166,11 @@ input:checked+.slider:before{transform:translateX(26px)}
     </div>
     <div id="signup-form" style="display:none">
       <div class="input-group"><label>Full Name</label><input type="text" id="signupName" placeholder="Collins Kimutai"></div>
-      <div class="input-group"><label>Business Name</label><input type="text" id="signupBusiness" placeholder="e.g. CK Data Deals"></div>
+      <div class="input-group"><label>Business Name (optional)</label><input type="text" id="signupBusiness" placeholder="e.g. CK Data Deals"></div>
       <div class="input-group"><label>Phone Number</label><input type="tel" id="signupPhone" placeholder="0757929759"></div>
       <div class="input-group"><label>Email</label><input type="email" id="signupEmail" placeholder="name@gmail.com"></div>
       <div class="input-group"><label>Password</label><input type="password" id="signupPassword" placeholder="Min 8 chars, letters + numbers"></div>
-      <div class="input-group"><label>Confirm Password</label><input type="password" id="signupPasswordConfirm"></div>
+      <div class="input-group"><label>Confirm Password</label><input type="password" id="signupPasswordConfirm" placeholder="Confirm password"></div>
       <button class="primary-btn" onclick="signup()">Create Profile</button>
       <p>Already have an account? <a onclick="showLogin()">Log In</a></p>
     </div>
@@ -204,7 +201,7 @@ input:checked+.slider:before{transform:translateX(26px)}
     <button class="status-btn" id="btn-battery" onclick="setupEnableBattery()">Allow</button>
   </div>
   <button class="continue-btn" id="continue-btn" onclick="finishSetup()" disabled>Continue</button>
-  <p class="setup-note">In the web preview these buttons only simulate the Android prompts.</p>
+  <p class="setup-note">All three must be completed before you can continue.</p>
 </div>
 
 <!-- MAIN APP -->
@@ -245,7 +242,7 @@ input:checked+.slider:before{transform:translateX(26px)}
       <div class="action-btn" onclick="openPage('page-sendmoney')"><h3>Send Money to...</h3><p>Send money from your till or M-Pesa</p></div>
       <button class="outline-btn" onclick="switchTab('txns')">View Statistics</button>
       <div class="section-header"><h3>Recent activity</h3><button class="btn-small" onclick="switchTab('txns')">See all</button></div>
-      <div id="recentActivityList"></div>
+      <div id="recentActivityList"><p style="color:#888;text-align:center;padding:20px">No activity yet.</p></div>
     </div>
     <div id="tab-sell" class="tab-content">
       <div class="tabs-header"><button class="tab-btn active" onclick="switchSellTab('data',this)">Data deals</button><button class="tab-btn" onclick="switchSellTab('sms',this)">Free SMS</button><button class="tab-btn" onclick="switchSellTab('advanced',this)">Advanced</button></div>
@@ -257,7 +254,9 @@ input:checked+.slider:before{transform:translateX(26px)}
     <div id="tab-txns" class="tab-content">
       <h2 style="color:#fff;margin-bottom:15px">Transactions</h2>
       <div class="txns-summary-grid"><div class="summary-box"><span>Total</span><h3>42</h3></div><div class="summary-box"><span>Success</span><h3 class="green-text">31</h3></div><div class="summary-box"><span>Failed</span><h3 class="red-text">3</h3></div><div class="summary-box"><span>Total Ksh</span><h3>790</h3></div></div>
-      <input class="search-bar" placeholder="Search name or number">
-      <div class="filter-row"><button class="filter-btn active">ALL</button><button class="filter-btn">SUCCESS</button><button class="filter-btn">FAILED</button><button class="filter-btn">QUEUED</button><button class="filter-btn">PENDING</button><button class="filter-btn">SENT</button></div>
+      <input class="input-group" style="width:100%;background:#1e1e1e;border:1px solid #333;color:#fff;padding:12px;border-radius:8px;margin-bottom:15px" placeholder="Search name or number">
+      <div class="filter-row"><button class="filter-btn active">ALL</button><button class="filter-btn">SUCCESS</button><button class="filter-btn">FAILED</button><button class="filter-btn">QUEUED</button><button class="filter-btn">PENDING</button></div>
     </div>
-    <div id="tab-stats" class="tab-conten
+    <div id="tab-stats" class="tab-content">
+      <div class="stats-header"><p>Today, Oct 6, 2026</p><h2>Statistics</h2></div>
+        
