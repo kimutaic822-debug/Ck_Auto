@@ -1,28 +1,29 @@
 // ============================================================
-// CK AUTO - CORE LOGIC ENGINE
+// TOAST NOTIFICATIONS (Green = Success, Red = Error)
 // ============================================================
-
-// ============================================================
-// PERMISSION MANAGEMENT (Official plugins only)
-// ============================================================
-async function requestAllPermissions() {
-    if (typeof Capacitor === 'undefined') return;
-    try {
-        const notif = Capacitor.Plugins.LocalNotifications;
-        if (notif) {
-            await notif.requestPermissions();
-        }
-    } catch (e) {
-        console.log('Permission error:', e);
-    }
+function showToast(message, type) {
+    const existing = document.querySelector('.toast-message');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-message ' + (type || 'green');
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 50);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
 }
 
-function openAccessibilitySettings() {
-    alert('To enable automation:\n\n1. Open phone Settings\n2. Go to Accessibility\n3. Find CK Auto\n4. Toggle it ON\n\nThis allows the app to read USSD menus silently.');
-}
-
-function requestBatteryOptimization() {
-    alert('To prevent the app from being killed:\n\n1. Open phone Settings\n2. Go to Battery\n3. Find Battery Optimization\n4. Set CK Auto to Unrestricted');
+// ============================================================
+// PASSWORD VALIDATION
+// ============================================================
+function validatePassword(pass) {
+    if (!pass || pass.length < 8) return 'Password must be at least 8 characters';
+    if (!/[a-zA-Z]/.test(pass)) return 'Password must contain at least one letter';
+    if (!/[0-9]/.test(pass)) return 'Password must contain at least one number';
+    if (!/^[a-zA-Z0-9!@#$%^&*_\-]+$/.test(pass)) return 'Password can only contain letters, numbers and symbols';
+    return null;
 }
 
 // ============================================================
@@ -55,20 +56,35 @@ function showLogin() {
 }
 
 function login() {
-    const phone = document.getElementById('loginPhone').value.trim();
-    const pass = document.getElementById('loginPassword').value.trim();
-    if (!phone || !pass) return alert('Please fill in all fields');
-    const savedUser = JSON.parse(localStorage.getItem('ck_user') || '{}');
-    if (!savedUser.name) {
-        localStorage.setItem('ck_user', JSON.stringify({
-            name: 'Collins Kimutai',
-            business: 'Not set',
-            phone: phone,
-            email: 'user@example.com'
-        }));
+    const identifier = document.getElementById('loginPhone').value.trim();
+    const pass = document.getElementById('loginPassword').value;
+
+    if (!identifier || !pass) {
+        showToast('Please fill in all fields', 'red');
+        return;
     }
+
+    const user = JSON.parse(localStorage.getItem('ck_user') || 'null');
+    if (!user) {
+        showToast('No account found. Please Sign Up first.', 'red');
+        return;
+    }
+
+    const matchPhone = user.phone === identifier;
+    const matchEmail = user.email === identifier;
+    if (!matchPhone && !matchEmail) {
+        showToast('Account not found for this phone/email.', 'red');
+        return;
+    }
+
+    if (user.password !== pass) {
+        showToast('Incorrect password. Try again.', 'red');
+        return;
+    }
+
+    showToast('Login successful! Welcome back, ' + user.name.split(' ')[0] + '.', 'green');
     localStorage.setItem('ck_logged_in', 'true');
-    enterApp();
+    setTimeout(enterApp, 900);
 }
 
 function signup() {
@@ -80,18 +96,36 @@ function signup() {
     const confirmPass = document.getElementById('signupPasswordConfirm').value;
 
     if (!name || !phone || !email || !pass) {
-        return alert('Please fill in all required fields');
-    }
-    if (pass !== confirmPass) {
-        return alert('Passwords do not match!');
-    }
-    if (!email.includes('@gmail.com') && !email.includes('@outlook.com')) {
-        return alert('Please use a valid @gmail.com or @outlook.com address');
+        showToast('Please fill in all required fields', 'red');
+        return;
     }
 
-    localStorage.setItem('ck_user', JSON.stringify({ name, business, phone, email }));
+    const passError = validatePassword(pass);
+    if (passError) {
+        showToast(passError, 'red');
+        return;
+    }
+
+    if (pass !== confirmPass) {
+        showToast('Passwords do not match', 'red');
+        return;
+    }
+
+    if (!email.includes('@gmail.com') && !email.includes('@outlook.com')) {
+        showToast('Email must end with @gmail.com or @outlook.com', 'red');
+        return;
+    }
+
+    if (phone.length < 10) {
+        showToast('Please enter a valid phone number', 'red');
+        return;
+    }
+
+    const userData = { name, business, phone, email, password: pass };
+    localStorage.setItem('ck_user', JSON.stringify(userData));
     localStorage.setItem('ck_logged_in', 'true');
-    enterApp();
+    showToast('Account created! Welcome ' + name.split(' ')[0] + '.', 'green');
+    setTimeout(enterApp, 900);
 }
 
 function enterApp() {
@@ -106,6 +140,28 @@ function confirmLogout() {
         localStorage.removeItem('ck_logged_in');
         checkAuth();
     }
+}
+
+async function requestAllPermissions() {
+    if (typeof Capacitor === 'undefined') return;
+    try {
+        const notif = Capacitor.Plugins.LocalNotifications;
+        if (notif) await notif.requestPermissions();
+    } catch (e) { console.log('Permission error:', e); }
+}
+
+function openAccessibilitySettings() {
+    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins.NativeSettings) {
+        try {
+            Capacitor.Plugins.NativeSettings.openAndroidSettings({ setting: 'accessibility' });
+            return;
+        } catch (e) {}
+    }
+    alert('Go to: Settings > Accessibility > CK Auto > Toggle ON');
+}
+
+function requestBatteryOptimization() {
+    alert('Go to: Settings > Battery > Battery Optimization > CK Auto > Unrestricted');
 }
 
 // ============================================================
@@ -135,9 +191,6 @@ function getDefaultOffers() {
     };
 }
 
-// ============================================================
-// APP INIT
-// ============================================================
 function initApp() {
     try {
         const user = JSON.parse(localStorage.getItem('ck_user') || '{}');
@@ -154,13 +207,11 @@ function initApp() {
             setVal('editBusiness', user.business === 'Not set' ? '' : user.business);
             setVal('editPhone', user.phone || '');
         }
-
         const toggle = document.getElementById('automationToggle');
         if (toggle) {
             toggle.checked = CK.automationPower;
             updateToggleUI(CK.automationPower);
         }
-
         renderRecentActivity();
         renderOffers();
         renderSalesByOffer();
@@ -192,18 +243,19 @@ function navTo(section) {
 }
 
 // ============================================================
-// AUTOMATION POWER TOGGLE (FULLY WORKING)
+// AUTOMATION TOGGLE
 // ============================================================
 function toggleAutomation(el) {
     if (!el) return;
     CK.automationPower = el.checked;
     localStorage.setItem('ck_automation', CK.automationPower ? '1' : '0');
     updateToggleUI(CK.automationPower);
-
     if (CK.automationPower) {
         startBackgroundService();
+        showToast('Automation ON (1)', 'green');
     } else {
         stopBackgroundService();
+        showToast('Automation OFF (0)', 'red');
     }
 }
 
@@ -223,10 +275,7 @@ function updateToggleUI(isOn) {
 }
 
 async function startBackgroundService() {
-    if (typeof Capacitor === 'undefined') {
-        console.log('[SERVICE] Starting background monitoring (browser mode)');
-        return;
-    }
+    if (typeof Capacitor === 'undefined') return;
     try {
         const notif = Capacitor.Plugins.LocalNotifications;
         if (notif) {
@@ -245,20 +294,15 @@ async function startBackgroundService() {
 }
 
 async function stopBackgroundService() {
-    if (typeof Capacitor === 'undefined') {
-        console.log('[SERVICE] Stopping background monitoring (browser mode)');
-        return;
-    }
+    if (typeof Capacitor === 'undefined') return;
     try {
         const notif = Capacitor.Plugins.LocalNotifications;
-        if (notif) {
-            await notif.cancel({ notifications: [{ id: 1 }] });
-        }
+        if (notif) await notif.cancel({ notifications: [{ id: 1 }] });
     } catch (e) { console.log('Stop service error:', e); }
 }
 
 // ============================================================
-// HIDE / UNHIDE EYE ICONS
+// HIDE / UNHIDE
 // ============================================================
 function toggleVisibility(elementId, iconEl) {
     const el = document.getElementById(elementId);
@@ -293,7 +337,7 @@ function renderRecentActivity() {
 }
 
 // ============================================================
-// SELL PAGE
+// SELL
 // ============================================================
 function switchSellTab(tab) {
     CK.currentSellTab = tab;
@@ -326,22 +370,17 @@ function saveProfile() {
     user.business = document.getElementById('editBusiness').value || 'Not set';
     user.phone = document.getElementById('editPhone').value;
     localStorage.setItem('ck_user', JSON.stringify(user));
-    alert('Profile saved successfully.');
+    showToast('Profile saved successfully', 'green');
     initApp();
 }
 
-// ============================================================
-// STATS
-// ============================================================
 function renderSalesByOffer() {
     const el = document.getElementById('salesByOfferList');
     if (!el) return;
     const sample = [
         { name: 'Sh20=250MB,24hr', count: 11 },
         { name: 'Ksh 20', count: 3 },
-        { name: 'Sh20=1GB,1hr', count: 1 },
-        { name: 'Ksh 75', count: 1 },
-        { name: 'Ksh 99', count: 1 }
+        { name: 'Sh20=1GB,1hr', count: 1 }
     ];
     const max = Math.max(...sample.map(s => s.count));
     el.innerHTML = sample.map(s => `
@@ -351,15 +390,9 @@ function renderSalesByOffer() {
         </div>`).join('');
 }
 
-// ============================================================
-// USSD AUTOMATION (Native plugin will handle this later)
-// ============================================================
 function dialUSSD(code) {
     console.log('[USSD] Dialing:', code);
-    alert('Dialing: ' + code + '\n\n(Native USSD plugin required for silent execution)');
+    alert('Dialing: ' + code);
 }
 
-// ============================================================
-// STARTUP
-// ============================================================
 document.addEventListener('DOMContentLoaded', checkAuth);
