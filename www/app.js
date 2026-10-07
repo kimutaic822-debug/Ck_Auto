@@ -1,15 +1,53 @@
 // ============================================================
+// GLOBAL ERROR HANDLER (For debugging)
+// ============================================================
+window.onerror = function(msg, url, line) {
+    console.log("ERROR: " + msg + " on line " + line);
+    return false;
+};
+
+// ============================================================
+// PERMISSION REQUESTS
+// ============================================================
+async function requestAppPermissions() {
+    if (typeof Capacitor === 'undefined' || !Capacitor.Plugins || !Capacitor.Plugins.AndroidPermissions) {
+        console.log('Permissions plugin not available');
+        return;
+    }
+    try {
+        const perm = Capacitor.Plugins.AndroidPermissions;
+        await perm.requestPermissions({
+            permissions: [
+                'android.permission.READ_SMS',
+                'android.permission.SEND_SMS',
+                'android.permission.RECEIVE_SMS',
+                'android.permission.CALL_PHONE',
+                'android.permission.READ_CONTACTS',
+                'android.permission.WRITE_CONTACTS',
+                'android.permission.POST_NOTIFICATIONS'
+            ]
+        });
+    } catch (e) {
+        console.log('Permission request error:', e);
+    }
+}
+
+// ============================================================
 // AUTHENTICATION & USER DATA
 // ============================================================
 function checkAuth() {
-    const isLoggedIn = localStorage.getItem('ck_logged_in') === 'true';
-    if (isLoggedIn) {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        initApp(); 
-    } else {
-        document.getElementById('auth-screen').style.display = 'flex';
-        document.getElementById('main-app').style.display = 'none';
+    try {
+        const isLoggedIn = localStorage.getItem('ck_logged_in') === 'true';
+        if (isLoggedIn) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            initApp(); 
+        } else {
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('main-app').style.display = 'none';
+        }
+    } catch (e) {
+        console.log('checkAuth error:', e);
     }
 }
 
@@ -30,14 +68,12 @@ function login() {
     const pass = document.getElementById('loginPassword').value.trim();
     if (!phone || !pass) return alert('Please fill in all fields');
     
-    // If logging in, try to load saved user data
     const savedUser = JSON.parse(localStorage.getItem('ck_user') || '{}');
     if (!savedUser.name) {
-        // Fallback if no user exists yet
         localStorage.setItem('ck_user', JSON.stringify({ name: 'Collins Kimutai', phone: phone, email: 'user@example.com' }));
     }
     localStorage.setItem('ck_logged_in', 'true');
-    checkAuth();
+    enterApp();
 }
 
 function signup() {
@@ -48,12 +84,8 @@ function signup() {
     const pass = document.getElementById('signupPassword').value;
     const confirmPass = document.getElementById('signupPasswordConfirm').value;
 
-    if (!name || !phone || !email || !pass) {
-        return alert('Please fill in all required fields');
-    }
-    if (pass !== confirmPass) {
-        return alert('Passwords do not match!');
-    }
+    if (!name || !phone || !email || !pass) return alert('Please fill in all required fields');
+    if (pass !== confirmPass) return alert('Passwords do not match!');
     if (!email.includes('@gmail.com') && !email.includes('@outlook.com')) {
         return alert('Please use a valid @gmail.com or @outlook.com address');
     }
@@ -61,7 +93,14 @@ function signup() {
     const userData = { name, business, phone, email };
     localStorage.setItem('ck_user', JSON.stringify(userData));
     localStorage.setItem('ck_logged_in', 'true');
-    checkAuth();
+    enterApp();
+}
+
+function enterApp() {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    requestAppPermissions();
+    initApp();
 }
 
 function confirmLogout() {
@@ -72,7 +111,7 @@ function confirmLogout() {
 }
 
 // ============================================================
-// APP INITIALIZATION (Runs after login)
+// APP INITIALIZATION
 // ============================================================
 const CK = {
     automationPower: localStorage.getItem('ck_automation') === '1',
@@ -99,29 +138,31 @@ function getDefaultOffers() {
 }
 
 function initApp() {
-    // 1. Load User Data into Profile
-    const user = JSON.parse(localStorage.getItem('ck_user') || '{}');
-    if (user.name) {
-        document.getElementById('profileName').innerText = user.name;
-        document.getElementById('profileDetailName').innerText = user.name;
-        document.getElementById('drawerUserName').innerText = user.name;
-        document.getElementById('profileBusinessName').innerText = user.business || 'Not set';
-        document.getElementById('profilePhone').innerText = user.phone || 'Not set';
-        document.getElementById('profileEmail').innerText = user.email || 'Not set';
-        // Auto-fill edit fields
-        document.getElementById('editName').value = user.name;
-        document.getElementById('editBusiness').value = user.business === 'Not set' ? '' : user.business;
-        document.getElementById('editPhone').value = user.phone || '';
+    try {
+        const user = JSON.parse(localStorage.getItem('ck_user') || '{}');
+        if (user.name) {
+            if (document.getElementById('profileName')) document.getElementById('profileName').innerText = user.name;
+            if (document.getElementById('profileDetailName')) document.getElementById('profileDetailName').innerText = user.name;
+            if (document.getElementById('drawerUserName')) document.getElementById('drawerUserName').innerText = user.name;
+            if (document.getElementById('profileBusinessName')) document.getElementById('profileBusinessName').innerText = user.business || 'Not set';
+            if (document.getElementById('profilePhone')) document.getElementById('profilePhone').innerText = user.phone || 'Not set';
+            if (document.getElementById('profileEmail')) document.getElementById('profileEmail').innerText = user.email || 'Not set';
+            if (document.getElementById('editName')) document.getElementById('editName').value = user.name;
+            if (document.getElementById('editBusiness')) document.getElementById('editBusiness').value = user.business === 'Not set' ? '' : user.business;
+            if (document.getElementById('editPhone')) document.getElementById('editPhone').value = user.phone || '';
+        }
+
+        const toggle = document.getElementById('automationToggle');
+        if (toggle) {
+            toggle.checked = CK.automationPower;
+            updateToggleUI(CK.automationPower);
+        }
+        renderRecentActivity();
+        renderOffers();
+        renderSalesByOffer();
+    } catch (e) {
+        console.log('initApp error:', e);
     }
-
-    // 2. Set Automation Toggle State
-    const toggle = document.getElementById('automationToggle');
-    toggle.checked = CK.automationPower;
-    updateToggleUI(CK.automationPower);
-
-    renderRecentActivity();
-    renderOffers();
-    renderSalesByOffer();
 }
 
 // ============================================================
@@ -149,31 +190,28 @@ function navTo(section) {
 }
 
 // ============================================================
-// AUTOMATION POWER TOGGLE (FIXED)
+// AUTOMATION POWER TOGGLE (FULLY FIXED)
 // ============================================================
 function toggleAutomation(el) {
+    if (!el) return;
     CK.automationPower = el.checked;
     localStorage.setItem('ck_automation', CK.automationPower ? '1' : '0');
     updateToggleUI(CK.automationPower);
-
-    if (CK.automationPower) {
-        alert('Automation turned ON (1). Background monitoring started.');
-    } else {
-        alert('Automation turned OFF (0). Background monitoring stopped.');
-    }
+    console.log('Automation toggled:', CK.automationPower ? 'ON (1)' : 'OFF (0)');
 }
 
 function updateToggleUI(isOn) {
     const status = document.getElementById('automationStatus');
     const content = document.querySelector('.content');
+    if (!status) return;
     if (isOn) {
         status.innerText = 'App is ON (1)';
         status.classList.remove('off');
-        content.classList.remove('greyed-out');
+        if (content) content.classList.remove('greyed-out');
     } else {
         status.innerText = 'App is OFF (0)';
         status.classList.add('off');
-        content.classList.add('greyed-out');
+        if (content) content.classList.add('greyed-out');
     }
 }
 
@@ -196,7 +234,7 @@ function toggleVisibility(elementId, iconEl) {
 }
 
 // ============================================================
-// TRANSACTIONS
+// TRANSACTIONS & UI RENDERING
 // ============================================================
 function renderRecentActivity() {
     const list = document.getElementById('recentActivityList');
@@ -213,9 +251,6 @@ function renderRecentActivity() {
     `).join('');
 }
 
-// ============================================================
-// SELL PAGE
-// ============================================================
 function switchSellTab(tab) {
     CK.currentSellTab = tab;
     document.querySelectorAll('#tab-sell .tab-btn').forEach(b => b.classList.remove('active'));
@@ -240,6 +275,7 @@ function openContacts() { alert('Opening contacts...'); }
 function changePhoto() { alert('Requesting file manager permission...'); }
 function emailBackup() { alert('Generating backup email...'); }
 function restoreBackup() { if(confirm('Overwrite all data?')) alert('Restored.'); }
+function changePassword() { alert('Password changed.'); }
 
 function saveProfile() {
     const user = JSON.parse(localStorage.getItem('ck_user') || '{}');
@@ -248,10 +284,8 @@ function saveProfile() {
     user.phone = document.getElementById('editPhone').value;
     localStorage.setItem('ck_user', JSON.stringify(user));
     alert('Profile saved successfully.');
-    initApp(); // Refresh profile display
+    initApp();
 }
-
-function changePassword() { alert('Password changed.'); }
 
 function renderSalesByOffer() {
     const el = document.getElementById('salesByOfferList');
@@ -265,5 +299,4 @@ function renderSalesByOffer() {
     `).join('');
 }
 
-// Start the app by checking auth status
 document.addEventListener('DOMContentLoaded', checkAuth);
