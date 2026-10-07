@@ -1,38 +1,41 @@
 // ============================================================
-// PERMISSION MANAGEMENT
+// PERMISSION MANAGEMENT (Using NativeSettings & Device)
 // ============================================================
 async function requestAllPermissions() {
     if (typeof Capacitor === 'undefined') return;
     try {
-        const perm = Capacitor.Plugins.AndroidPermissions;
-        if (perm) {
-            await perm.requestPermissions({
-                permissions: [
-                    'android.permission.READ_SMS',
-                    'android.permission.SEND_SMS',
-                    'android.permission.RECEIVE_SMS',
-                    'android.permission.CALL_PHONE',
-                    'android.permission.READ_CONTACTS',
-                    'android.permission.WRITE_CONTACTS',
-                    'android.permission.POST_NOTIFICATIONS'
-                ]
-            });
-        }
-        // Request battery optimization exemption
-        const bg = Capacitor.Plugins.BackgroundMode;
-        if (bg && bg.requestManageIgnoreBatteryOptimizations) {
-            await bg.requestManageIgnoreBatteryOptimizations();
+        // Open App Details settings so user can grant permissions manually
+        const settings = Capacitor.Plugins.NativeSettings;
+        if (settings) {
+            await settings.openAndroidSettings({ setting: 'app_details' });
         }
     } catch (e) {
         console.log('Permission error:', e);
+        alert('Please go to Settings > Apps > CK Auto > Permissions to grant them manually.');
     }
 }
 
-function openAccessibilitySettings() {
-    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins.AndroidPermissions) {
-        Capacitor.Plugins.AndroidPermissions.openSettings();
+async function openAccessibilitySettings() {
+    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins.NativeSettings) {
+        try {
+            await Capacitor.Plugins.NativeSettings.openAndroidSettings({ setting: 'accessibility' });
+        } catch (e) {
+            alert('Please go to Settings > Accessibility > CK Auto and enable it.');
+        }
     } else {
         alert('Please go to Settings > Accessibility > CK Auto and enable it.');
+    }
+}
+
+async function requestBatteryOptimization() {
+    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins.NativeSettings) {
+        try {
+            await Capacitor.Plugins.NativeSettings.openAndroidSettings({ setting: 'battery_optimization' });
+        } catch (e) {
+            alert('Please go to Settings > Battery > Battery Optimization and set CK Auto to Unrestricted.');
+        }
+    } else {
+        alert('Please go to Settings > Battery > Battery Optimization and set CK Auto to Unrestricted.');
     }
 }
 
@@ -326,7 +329,6 @@ function renderSalesByOffer() {
 function dialUSSD(code) {
     console.log('[USSD] Would dial:', code);
     alert('Dialing: ' + code + '\n\n(Accessibility Service will read the menu and click buttons silently)');
-    // Full automation: this is triggered by the accessibility service in the native layer
 }
 
 document.addEventListener('DOMContentLoaded', checkAuth);
