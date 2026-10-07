@@ -12,6 +12,27 @@ body {
     overflow-x: hidden;
 }
 
+/* Authentication Screen */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #121212;
+    padding: 20px;
+}
+.auth-card {
+    background: #1e1e1e;
+    padding: 30px 20px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #2a4a33;
+}
+.auth-card .input-group input {
+    background: #121212;
+}
+
 /* Header */
 .app-header {
     display: flex;
