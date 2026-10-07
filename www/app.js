@@ -1,12 +1,12 @@
 // ============================================================
-// AUTHENTICATION
+// AUTHENTICATION & USER DATA
 // ============================================================
 function checkAuth() {
     const isLoggedIn = localStorage.getItem('ck_logged_in') === 'true';
     if (isLoggedIn) {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
-        initApp(); // Load the app data once logged in
+        initApp(); 
     } else {
         document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('main-app').style.display = 'none';
@@ -16,11 +16,13 @@ function checkAuth() {
 function showSignup() {
     document.getElementById('login-form').style.display = 'none';
     document.getElementById('signup-form').style.display = 'block';
+    document.getElementById('auth-title').innerText = 'Create Your Profile';
 }
 
 function showLogin() {
     document.getElementById('signup-form').style.display = 'none';
     document.getElementById('login-form').style.display = 'block';
+    document.getElementById('auth-title').innerText = 'Welcome to CK Auto';
 }
 
 function login() {
@@ -28,20 +30,37 @@ function login() {
     const pass = document.getElementById('loginPassword').value.trim();
     if (!phone || !pass) return alert('Please fill in all fields');
     
+    // If logging in, try to load saved user data
+    const savedUser = JSON.parse(localStorage.getItem('ck_user') || '{}');
+    if (!savedUser.name) {
+        // Fallback if no user exists yet
+        localStorage.setItem('ck_user', JSON.stringify({ name: 'Collins Kimutai', phone: phone, email: 'user@example.com' }));
+    }
     localStorage.setItem('ck_logged_in', 'true');
     checkAuth();
 }
 
 function signup() {
     const name = document.getElementById('signupName').value.trim();
+    const business = document.getElementById('signupBusiness').value.trim() || 'Not set';
+    const phone = document.getElementById('signupPhone').value.trim();
     const email = document.getElementById('signupEmail').value.trim();
-    if (!name || !email) return alert('Please fill in all required fields');
+    const pass = document.getElementById('signupPassword').value;
+    const confirmPass = document.getElementById('signupPasswordConfirm').value;
+
+    if (!name || !phone || !email || !pass) {
+        return alert('Please fill in all required fields');
+    }
+    if (pass !== confirmPass) {
+        return alert('Passwords do not match!');
+    }
     if (!email.includes('@gmail.com') && !email.includes('@outlook.com')) {
         return alert('Please use a valid @gmail.com or @outlook.com address');
     }
-    
+
+    const userData = { name, business, phone, email };
+    localStorage.setItem('ck_user', JSON.stringify(userData));
     localStorage.setItem('ck_logged_in', 'true');
-    localStorage.setItem('ck_user', JSON.stringify({ name, email }));
     checkAuth();
 }
 
@@ -80,38 +99,25 @@ function getDefaultOffers() {
 }
 
 function initApp() {
-    const toggle = document.getElementById('automationToggle');
-    const status = document.getElementById('automationStatus');
-    const content = document.querySelector('.content');
-
-    // Set initial toggle state
-    toggle.checked = CK.automationPower;
-    updateToggleUI();
-
-    // Attach the event listener
-    toggle.addEventListener('change', function() {
-        CK.automationPower = this.checked;
-        localStorage.setItem('ck_automation', CK.automationPower ? '1' : '0');
-        updateToggleUI();
-        
-        if (CK.automationPower) {
-            alert('Automation turned ON (1). Background monitoring would start here.');
-        } else {
-            alert('Automation turned OFF (0). Background monitoring stopped.');
-        }
-    });
-
-    function updateToggleUI() {
-        if (CK.automationPower) {
-            status.innerText = 'App is ON (1)';
-            status.classList.remove('off');
-            content.classList.remove('greyed-out');
-        } else {
-            status.innerText = 'App is OFF (0)';
-            status.classList.add('off');
-            content.classList.add('greyed-out');
-        }
+    // 1. Load User Data into Profile
+    const user = JSON.parse(localStorage.getItem('ck_user') || '{}');
+    if (user.name) {
+        document.getElementById('profileName').innerText = user.name;
+        document.getElementById('profileDetailName').innerText = user.name;
+        document.getElementById('drawerUserName').innerText = user.name;
+        document.getElementById('profileBusinessName').innerText = user.business || 'Not set';
+        document.getElementById('profilePhone').innerText = user.phone || 'Not set';
+        document.getElementById('profileEmail').innerText = user.email || 'Not set';
+        // Auto-fill edit fields
+        document.getElementById('editName').value = user.name;
+        document.getElementById('editBusiness').value = user.business === 'Not set' ? '' : user.business;
+        document.getElementById('editPhone').value = user.phone || '';
     }
+
+    // 2. Set Automation Toggle State
+    const toggle = document.getElementById('automationToggle');
+    toggle.checked = CK.automationPower;
+    updateToggleUI(CK.automationPower);
 
     renderRecentActivity();
     renderOffers();
@@ -119,7 +125,7 @@ function initApp() {
 }
 
 // ============================================================
-// NAVIGATION
+// NAVIGATION & UI
 // ============================================================
 function toggleDrawer() {
     document.getElementById('sideDrawer').classList.toggle('open');
@@ -130,7 +136,8 @@ function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active');
-    document.querySelector(`.nav-item[onclick="switchTab('${tabId}')"]`).classList.add('active');
+    const navBtn = document.querySelector(`.nav-item[onclick="switchTab('${tabId}')"]`);
+    if (navBtn) navBtn.classList.add('active');
     CK.selectedOffer = null;
 }
 
@@ -142,7 +149,36 @@ function navTo(section) {
 }
 
 // ============================================================
-// UI HELPERS
+// AUTOMATION POWER TOGGLE (FIXED)
+// ============================================================
+function toggleAutomation(el) {
+    CK.automationPower = el.checked;
+    localStorage.setItem('ck_automation', CK.automationPower ? '1' : '0');
+    updateToggleUI(CK.automationPower);
+
+    if (CK.automationPower) {
+        alert('Automation turned ON (1). Background monitoring started.');
+    } else {
+        alert('Automation turned OFF (0). Background monitoring stopped.');
+    }
+}
+
+function updateToggleUI(isOn) {
+    const status = document.getElementById('automationStatus');
+    const content = document.querySelector('.content');
+    if (isOn) {
+        status.innerText = 'App is ON (1)';
+        status.classList.remove('off');
+        content.classList.remove('greyed-out');
+    } else {
+        status.innerText = 'App is OFF (0)';
+        status.classList.add('off');
+        content.classList.add('greyed-out');
+    }
+}
+
+// ============================================================
+// HIDE / UNHIDE EYE ICONS
 // ============================================================
 function toggleVisibility(elementId, iconEl) {
     const el = document.getElementById(elementId);
@@ -159,6 +195,9 @@ function toggleVisibility(elementId, iconEl) {
     }
 }
 
+// ============================================================
+// TRANSACTIONS
+// ============================================================
 function renderRecentActivity() {
     const list = document.getElementById('recentActivityList');
     if (!list) return;
@@ -174,6 +213,16 @@ function renderRecentActivity() {
     `).join('');
 }
 
+// ============================================================
+// SELL PAGE
+// ============================================================
+function switchSellTab(tab) {
+    CK.currentSellTab = tab;
+    document.querySelectorAll('#tab-sell .tab-btn').forEach(b => b.classList.remove('active'));
+    if (window.event && window.event.target) window.event.target.classList.add('active');
+    renderOffers();
+}
+
 function renderOffers() {
     const list = document.getElementById('offerList');
     if (!list) return;
@@ -185,21 +234,24 @@ function renderOffers() {
     `).join('');
 }
 
-function switchSellTab(tab) {
-    CK.currentSellTab = tab;
-    document.querySelectorAll('#tab-sell .tab-btn').forEach(b => b.classList.remove('active'));
-    if (window.event && window.event.currentTarget) window.event.currentTarget.classList.add('active');
-    renderOffers();
-}
-
 function selectOffer(id) { CK.selectedOffer = id; renderOffers(); }
 function confirmSale() { alert('Dialing *180*5*2#... (Native plugin required)'); }
 function openContacts() { alert('Opening contacts...'); }
-function saveProfile() { alert('Profile saved.'); }
-function changePassword() { alert('Password changed.'); }
 function changePhoto() { alert('Requesting file manager permission...'); }
 function emailBackup() { alert('Generating backup email...'); }
 function restoreBackup() { if(confirm('Overwrite all data?')) alert('Restored.'); }
+
+function saveProfile() {
+    const user = JSON.parse(localStorage.getItem('ck_user') || '{}');
+    user.name = document.getElementById('editName').value;
+    user.business = document.getElementById('editBusiness').value || 'Not set';
+    user.phone = document.getElementById('editPhone').value;
+    localStorage.setItem('ck_user', JSON.stringify(user));
+    alert('Profile saved successfully.');
+    initApp(); // Refresh profile display
+}
+
+function changePassword() { alert('Password changed.'); }
 
 function renderSalesByOffer() {
     const el = document.getElementById('salesByOfferList');
