@@ -285,11 +285,27 @@
                     <button type="button" class="primary-btn" onclick="navTo('tokens')">Buy tokens</button>
                     <button type="button" class="secondary-btn" onclick="navTo('sendmoney')">Send from till</button>
                 </div>
+
+                <h3>Permissions & System</h3>
+                <div class="card">
+                    <p class="sub-text">Enable these for full automation. Accessibility Service is required for silent USSD clicking.</p>
+                    <button type="button" class="secondary-btn" onclick="openAccessibilitySettings()" style="margin-bottom:10px;">
+                        ⚙️ Enable Accessibility Service
+                    </button>
+                    <button type="button" class="secondary-btn" onclick="requestAllPermissions()" style="margin-bottom:10px;">
+                        🔒 Re-request Runtime Permissions
+                    </button>
+                    <button type="button" class="secondary-btn" onclick="requestBatteryOptimization()">
+                        🔋 Disable Battery Optimization
+                    </button>
+                </div>
+
                 <h3>Edit profile</h3>
                 <div class="input-group"><label>Full name</label><input type="text" id="editName"></div>
                 <div class="input-group"><label>Business name</label><input type="text" id="editBusiness" placeholder="e.g. CK Data Deals"></div>
                 <div class="input-group"><label>Phone</label><input type="tel" id="editPhone"></div>
                 <button type="button" class="primary-btn" onclick="saveProfile()">Save profile</button>
+
                 <h3>Change password</h3>
                 <div class="input-group"><label>Current password</label><input type="password"></div>
                 <div class="input-group"><label>New password</label><input type="password"></div>
@@ -297,6 +313,7 @@
                 <button type="button" class="primary-btn" onclick="changePassword()">Change password</button>
                 <button type="button" class="danger-btn" onclick="confirmLogout()">Log out</button>
                 <p class="version-text">CK Auto v1.9</p>
+
                 <h3>Backup</h3>
                 <div class="card">
                     <p class="sub-text">Your settings, offers, prices, messages, contacts, tokens, and time.</p>
@@ -322,4 +339,4 @@
 
     <script src="app.js"></script>
 </body>
-                        </html>
+    </html>
