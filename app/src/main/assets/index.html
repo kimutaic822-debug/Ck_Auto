@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CK Shortcut</title>
+<style>
+:root{--bg:#0E1412;--card:#182019;--card2:#1F2A22;--ink:#F5F5F0;--mute:#94A19A;--brand:#10B981;--brand2:#12301F;--line:#26332B;--warn:#EF4444;--amber:#FBBF24;--ussd:#26282B;--ussdt:#E8E8E8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:520px;margin-inline:auto;padding-bottom:84px;padding-top:env(safe-area-inset-top,0px)}
+h1{font-size:20px;margin:0}h2{font-size:16px;margin:16px 0 8px}
+header{padding:16px;display:flex;justify-content:space-between;align-items:center}
+.ham{background:none;border:0;color:var(--ink);font-size:24px;cursor:pointer}
+section{display:none;padding:0 14px}section.act{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tag{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--brand2);color:var(--brand);font-weight:700}
+.tag.fail{background:#3A1A1A;color:var(--warn)}
+label{display:block;font-size:13px;color:var(--mute);margin:14px 0 6px}
+input,select,textarea{width:100%;font:inherit;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);outline:none}
+input:focus{border-color:var(--brand)}
+textarea{min-height:100px}
+.go{width:100%;margin-top:12px;padding:14px;font:inherit;font-weight:700;font-size:16px;border:0;border-radius:12px;background:var(--brand);color:#0E1412;cursor:pointer}
+.go:disabled{opacity:.4}
+.chip{display:inline-block;background:var(--brand2);color:var(--brand);border:0;border-radius:99px;padding:6px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.chip.alt{background:#1F2A22;color:var(--ink)}
+.list{display:grid;gap:8px}
+.sm{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.sm button{font:inherit;font-size:12px;padding:7px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.sm button.active{background:var(--brand);color:#0E1412;border-color:var(--brand);font-weight:700}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sw button{width:46px;height:26px;border-radius:13px;border:0;background:var(--line);position:relative;cursor:pointer}
+.sw button::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sw button.on{background:var(--brand)}.sw button.on::after{left:23px}
+.greeting{display:flex;justify-content:space-between;align-items:center;padding:0 14px 14px}
+.avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#FBBF24,#EF4444);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#0E1412}
+.greet-text{flex:1;margin-left:12px}
+.greet-text small{color:var(--mute);font-size:12px}
+.greet-text b{font-size:18px;display:block}
+.hdr-icons{display:flex;gap:8px}
+.hdr-icons button{width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:16px;cursor:pointer}
+.balcards{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 14px 14px;margin:0 -14px}
+.balcards::-webkit-scrollbar{display:none}
+.balcard{flex:0 0 78%;scroll-snap-align:center;border-radius:16px;padding:16px;min-height:150px;position:relative;border:1px solid var(--line)}
+.balcard.mpesa{background:linear-gradient(160deg,#0E2A1F,#0B1F17)}
+.balcard.airtime{background:linear-gradient(160deg,#1A2A3F,#0F1A2A)}
+.balcard .top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mute)}
+.simchip{background:rgba(255,255,255,.08);color:var(--ink);border:0;padding:4px 10px;border-radius:99px;font:inherit;font-size:11px;cursor:pointer}
+.eye{background:none;border:0;color:var(--mute);cursor:pointer;padding:0;font-size:16px}
+.balcard .amt{font-size:28px;font-weight:800;margin:10px 0 6px;letter-spacing:-.5px}
+.balcard .sub{font-size:11px;color:var(--mute);margin-bottom:10px}
+.balcard .viewbtn{width:100%;padding:10px;border-radius:10px;background:transparent;border:1.5px solid var(--brand);color:var(--brand);font-weight:700;font-size:13px;cursor:pointer}
+.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:0 14px}
+.qa-btn{background:none;border:0;color:var(--ink);font:inherit;font-size:11px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}
+.qa-ico{width:50px;height:50px;border-radius:14px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:20px}
+.qa-btn:active .qa-ico{background:var(--brand2);border-color:var(--brand)}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 8px}
+.sec-hdr h2{margin:0}
+.freq-tabs{display:flex;gap:6px;margin:0 14px 10px;background:var(--card);padding:4px;border-radius:99px;border:1px solid var(--line)}
+.freq-tabs button{flex:1;padding:8px;background:none;border:0;color:var(--mute);font:inherit;font-size:13px;border-radius:99px;cursor:pointer}
+.freq-tabs button.active{background:var(--brand);color:#0E1412;font-weight:700}
+.freq-list{display:flex;gap:10px;overflow-x:auto;padding:0 14px 14px}
+.freq-list::-webkit-scrollbar{display:none}
+.freq-item{flex:0 0 120px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;cursor:pointer}
+.freq-item .ico{font-size:24px;margin-bottom:6px}
+.freq-item b{display:block;font-size:13px;margin-bottom:2px}
+.freq-item small{color:var(--mute);font-size:11px}
+.banner{background:linear-gradient(135deg,#0F2A22,#1A3A2E);border-radius:14px;padding:16px;margin:0 14px 14px;border:1px solid var(--line)}
+.banner b{display:block;font-size:15px;margin-bottom:4px}
+.banner small{color:var(--mute);font-size:12px}
+nav{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:auto;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;padding:12px 2px;font:inherit;font-size:11px;background:none;border:0;color:var(--mute);cursor:pointer}
+nav button[aria-selected=true]{color:var(--brand);font-weight:700}
+nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
+.dr{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:8}.dr.show{display:block}
+.dp{width:78%;max-width:300px;height:100%;background:var(--card);overflow:auto;border-right:1px solid var(--line)}
+.dh{background:linear-gradient(#0F2A22,#0A1F17);padding:40px 18px 18px}
+.dh b{font-size:20px;display:block}
+.dh small{color:var(--mute);font-size:12px}
+.dp button{display:block;width:100%;text-align:left;font:inherit;background:none;border:0;color:var(--ink);padding:14px 18px;cursor:pointer;display:flex;align-items:center;border-bottom:1px solid var(--line)}
+.dp button i{font-style:normal;display:inline-block;width:32px;font-size:16px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:9}.ov.show{display:flex}
+.ussd{background:var(--ussd);color:var(--ussdt);width:100%;max-width:340px;border-radius:16px;padding:18px;font-size:14px}
+.ussd pre{margin:0 0 12px;white-space:pre-wrap;font:14px/1.5 Consolas,monospace;min-height:120px}
+.ussd .in{border-bottom:2px solid #4a8cff;padding:6px 0;min-height:28px;font:16px Consolas,monospace}
+.ussd .st,.ussd .nt{color:#9aa;font-size:12px;margin-top:8px}
+.ussd .done{width:100%;margin-top:12px;padding:11px;border:0;border-radius:10px;background:var(--brand);color:#0E1412;font:inherit;font-weight:700;display:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center;z-index:10}.modal.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:520px;border-radius:24px 24px 0 0;padding:22px;max-height:85vh;overflow-y:auto;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
+.sheet h3{margin:0 0 14px;font-size:18px}
+.note{font-size:12px;color:var(--mute);margin-top:10px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;flex:none}
+.dot.on{background:#22C55E}.dot.off{background:#EF4444}
+.offer{width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:8px}
+.offer[aria-pressed=true]{border-color:var(--brand);background:var(--brand2)}
+.offer span{color:var(--mute);font-size:12px;display:block}
+.pinDots{display:flex;justify-content:center;gap:14px;margin:30px 0}
+.pinDot{width:14px;height:14px;border-radius:50%;border:2px solid var(--brand);background:transparent;transition:.15s}
+.pinDot.filled{background:var(--brand)}
+.pinPad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:300px;margin:0 auto}
+.pinBtn{aspect-ratio:1;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:22px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pinBtn:active{background:var(--brand2);border-color:var(--brand)}
+.pinBtn.empty{background:transparent;border:0;cursor:default}
+.lockScreen{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;padding:40px 20px 20px}
+.lockScreen .logo{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,#10B981,#059669);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#0E1412;margin:0 auto 20px}
+.lockScreen h2{text-align:center;margin:0 0 4px}
+.lockScreen .who{text-align:center;color:var(--mute);font-size:14px;margin-bottom:20px}
+.lockScreen .forgot{text-align:center;margin-top:20px}
+.lockScreen .forgot button{background:none;border:0;color:var(--brand);font:inherit;cursor:pointer}
+.rec-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.rec-item:last-child{border-bottom:0}
+.rec-ico{width:40px;height:40px;border-radius:12px;background:var(--brand2);display:flex;align-items:center;justify-content:center;font-size:18px}
+.rec-body{flex:1}
+.rec-body b{display:block;font-size:14px}
+.rec-body small{color:var(--mute);font-size:12px}
+.rec-amt{text-align:right}
+.rec-amt b{display:block;font-size:14px}
+.toast{display:none!important}
+.sync-ts{font-size:10px;color:var(--mute);margin-top:4px}
+.pill{display:inline-block;padding:4px 10px;background:var(--brand2);color:var(--brand);border-radius:99px;font-size:11px;font-weight:700;margin-right:6px}
+</style>
+</head>
+<body>
+  <div class="lockScreen" id="lockScreen" style="display:none">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div class="logo">CK</div>
+    <h2 id="lockGreeting">Welcome back</h2>
+    <div class="who" id="lockWho">Tap fingerprint or enter PIN</div>
+    <div class="pinDots" id="pinDots">
+      <div class="pinDot"></div><div class="pinDot"></div><div class="pinDot"></div><div class="pinDot"></div>
+    </div>
+    <div class="pinPad" id="pinPad">
+      <button class="pinBtn" onclick="pinPress('1')">1</button>
+      <button class="pinBtn" onclick="pinPress('2')">2</button>
+      <button class="pinBtn" onclick="pinPress('3')">3</button>
+      <button class="pinBtn" onclick="pinPress('4')">4</button>
+      <button class="pinBtn" onclick="pinPress('5')">5</button>
+      <button class="pinBtn" onclick="pinPress('6')">6</button>
+      <button class="pinBtn" onclick="pinPress('7')">7</button>
+      <button class="pinBtn" onclick="pinPress('8')">8</button>
+      <button class="pinBtn" onclick="pinPress('9')">9</button>
+      <button class="pinBtn empty"></button>
+      <button class="pinBtn" onclick="pinPress('0')">0</button>
+      <button class="pinBtn" onclick="pinPress('del')">⌫</button>
+    </div>
+    <div class="forgot"><button onclick="forgotPin()">Forgot PIN?</button></div>
+  </div>
+</div>
+
+<section id="s-auth">
+  <div style="text-align:center;padding:32px 0 20px">
+    <div class="avatar" style="margin:0 auto 14px;width:72px;height:72px;font-size:26px">CK</div>
+    <h1 style="font-size:22px">CK Shortcut</h1>
+    <p class="note" id="auh">Create your account to get started</p>
+  </div>
+  <div id="aub"></div>
+</section>
+
+<section id="s-setup">
+  <div class="card" style="background:linear-gradient(#0F2A22,#0A1F17);border:0;text-align:center;padding:22px">
+    <h2 style="margin:0 0 6px">Set up CK Shortcut</h2>
+    <small style="color:var(--mute)">Allow these three things so the app can run silently.</small>
+  </div>
+  <div class="list" id="stb" style="margin-top:12px"></div>
+  <button class="go" id="stc" onclick="finishSetup()" disabled>Continue</button>
+</section>
+
+<section id="s-fuliza">
+  <div style="text-align:center;padding:32px 0 20px">
+    <div class="avatar" style="margin:0 auto 14px;width:64px;height:64px;font-size:22px">💰</div>
+    <h1 style="font-size:20px">Set your Fuliza limit</h1>
+    <p class="note">We use this to show your available Fuliza balance. You can change it later.</p>
+  </div>
+  <div class="card">
+    <label for="fulizaLimit">Fuliza limit (Ksh)</label>
+    <input id="fulizaLimit" type="tel" inputmode="numeric" placeholder="e.g. 5000">
+    <button class="go" onclick="saveFulizaLimit()">Save</button>
+  </div>
+  <button class="chip" style="width:100%;text-align:center;padding:12px" onclick="skipFuliza()">Skip for now</button>
+</section>
+
+<section id="s-home" class="act">
+  <div class="greeting">
+    <div class="avatar" id="hAv" onclick="go('you')">CK</div>
+    <div class="greet-text">
+      <small id="hGreet">Good morning</small>
+      <b id="hName">Kimutai 👋</b>
+    </div>
+    <div class="hdr-icons">
+      <button onclick="go('alerts')">🔔</button>
+      <button onclick="go('search')">🔍</button>
+    </div>
+  </div>
+
+  <div class="balcards">
+    <div class="balcard mpesa">
+      <div class="top">
+        <button class="simchip" id="mpSim" onclick="pickSim('mpesa')">SIM 1 ▾</button>
+        <button class="eye" onclick="toggleBal('mpesa')" id="mpEye">👁</button>
+      </div>
+      <div class="amt" id="mpAmt">Ksh --</div>
+      <div class="sub" id="mpFul">👁 Fuliza hidden</div>
+      <button class="viewbtn" onclick="go('statements')">View Statements</button>
+    </div>
+    <div class="balcard airtime">
+      <div class="top">
+        <button class="simchip" id="airSim" onclick="pickSim('airtime')">SIM 1 ▾</button>
+        <button class="eye" onclick="toggleBal('airtime')" id="airEye">👁</button>
+      </div>
+      <div class="amt" id="airAmt">Ksh --</div>
+      <div class="sub sync-ts" id="airSync">Tap to check balance</div>
+      <button class="viewbtn" onclick="topupAirtime()">Top Up Airtime</button>
+    </div>
+  </div>
+
+  <div class="sec-hdr"><h2>Quick Actions</h2><button class="chip" onclick="go('allactions')">View all</button></div>
+  <div class="qa">
+    <button class="qa-btn" onclick="go('sendmoney')"><div class="qa-ico">💸</div>Send Money</button>
+    <button class="qa-btn" onclick="go('lipa')"><div class="qa-ico">🛒</div>Lipa na M-PESA</button>
+    <button class="qa-btn" onclick="go('withdraw')"><div class="qa-ico">🏧</div>Withdraw</button>
+    <button class="qa-btn" onclick="go('pochi')"><div class="qa-ico">📱</div>Pochi Wallet</button>
+    <button class="qa-btn" onclick="go('bundles')"><div class="qa-ico">📦</div>Buy Bundles</button>
+    <button class="qa-btn" onclick="topupAirtime()"><div class="qa-ico">☎️</div>Airtime</button>
+    <button class="qa-btn" onclick="go('till')"><div class="qa-ico">🏪</div>Send from Till</button>
+    <button class="qa-btn" onclick="go('record')"><div class="qa-ico">➕</div>Add Function</button>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:20px"><h2>Frequents</h2><button class="chip" onclick="toggleFreq()" id="freqTog">▼</button></div>
+  <div id="freqWrap">
+    <div class="freq-tabs">
+      <button class="active" onclick="setFreq('apps',this)">Apps</button>
+      <button onclick="setFreq('send',this)">Send</button>
+      <button onclick="setFreq('pay',this)">Pay</button>
+      <button onclick="setFreq('bundles',this)">Bundles</button>
+    </div>
+    <div class="freq-list" id="freqList"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:8px"><h2>Explore & Discover 🔥</h2></div>
+  <div class="banner">
+    <b>New to CK Shortcut?</b>
+    <small>Save any USSD flow as a one-tap shortcut. Record it once, use it forever.</small>
+  </div>
+</section>
+
+<section id="s-sendmoney">
+  <h2 style="margin-top:8px">Send Money to...</h2>
+  <div class="card"><b>What do you want to do?</b><div class="list" style="margin-top:10px" id="smTypes"></div></div>
+  <div id="smForm"></div>
+  <h2>Recent transfers</h2>
+  <div class="list" id="smLog"></div>
+</section>
+
+<section id="s-bundles">
+  <h2 style="margin-top:8px">Buy Bundles</h2>
+  <div class="card" style="padding:0;overflow:hidden">
+    <button class="offer" onclick="chooseBundle('data')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)">
+      <div><strong>📶 Data Bundles</strong><span>Opens *544# — you pick</span></div><strong>›</strong>
+    </button>
+    <button class="offer" onclick="chooseBundle('sms')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)">
+      <div><strong>💬 SMS Bundles</strong><span>Fast automated flow</span></div><strong>›</strong>
+    </button>
+    <button class="offer" onclick="topupAirtime()" style="border-radius:0;border:0">
+      <div><strong>☎️ Airtime Top Up</strong><span>Buy airtime for any number</span></div><strong>›</strong>
+    </button>
+  </div>
+</section>
+
+<section id="s-smsbundle">
+  <h2 style="margin-top:8px">SMS Bundles</h2>
+  <label for="smsRecipient">For number</label>
+  <input id="smsRecipient" type="tel" inputmode="numeric" maxlength="13" placeholder="07XX XXX XXX">
+  <div class="sm" id="smsTabs" style="margin-top:16px">
+    <button class="active" onclick="setSmsPeriod('Daily',this)">Daily</button>
+    <button onclick="setSmsPeriod('Weekly',this)">Weekly</button>
+    <button onclick="setSmsPeriod('Monthly',this)">Monthly</button>
+  </div>
+  <div class="list" id="smsList"></div>
+</section>
+
+<section id="s-confirm">
+  <h2 style="margin-top:8px">Confirm</h2>
+  <div id="confirmBody"></div>
+</section>
+
+<section id="s-till">
+  <h2 style="margin-top:8px">Send from Till</h2>
+  <div class="card"><b>How it works</b><br><small style="color:var(--mute)">Dial *234*...# → Customer ID → PIN → confirm on Safaricom screen.</small></div>
+  <label>Send to</label><input id="tillTo" type="tel" maxlength="13" placeholder="07XX XXX XXX">
+  <label>Amount (Ksh)</label><input id="tillAmt" type="tel" inputmode="numeric">
+  <label>Customer ID (2 letters)</label><input id="tillId" maxlength="2" autocapitalize="none" oninput="this.value=this.value.replace(/[^a-zA-Z]/g,'').toLowerCase()">
+  <label>PIN</label><input id="tillPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">
+  <button class="go" onclick="runTill()">Send money</button>
+  <p class="note">Your PIN is used once and never saved.</p>
+  <h2>Recent till transfers</h2><div class="list" id="tillLog"></div>
+</section>
+
+<section id="s-record">
+  <h2 style="margin-top:8px">Record a Function</h2>
+  <div class="card" style="text-align:center;padding:22px">
+    <div style="font-size:44px;margin-bottom:10px">🎥</div>
+    <b>Record a Function</b>
+    <p class="note" style="margin-top:8px">Do the USSD flow once yourself. We'll watch and save every step, then ask you only for variables next time.</p>
+  </div>
+  <label>Function name</label><input id="recName" placeholder="e.g. Buy Airtime">
+  <label>Category</label>
+  <div class="sm" id="recCat">
+    <button class="active" onclick="setRecCat('Bundles',this)">Bundles</button>
+    <button onclick="setRecCat('Bills',this)">Bills</button>
+    <button onclick="setRecCat('Send',this)">Send</button>
+    <button onclick="setRecCat('Other',this)">Other</button>
+  </div>
+  <button class="go" onclick="startRecording()">Start Recording</button>
+  <p class="note">While recording, dial your USSD code and go through the flow. Come back here when done.</p>
+  <div id="recStatus"></div>
+</section>
+
+<section id="s-history">
+  <h2 style="margin-top:8px">History</h2>
+  <div class="sm" id="histFilters">
+    <button class="active" onclick="setHistFilter('all',this)">All</button>
+    <button onclick="setHistFilter('success',this)">Success</button>
+    <button onclick="setHistFilter('failed',this)">Failed</button>
+  </div>
+  <div class="list" id="histList"></div>
+</section>
+
+<section id="s-stats">
+  <h2 style="margin-top:8px">Stats</h2>
+  <div class="g2">
+    <div class="card"><small style="color:var(--mute)">Total shortcuts</small><b style="display:block;font-size:24px;margin-top:6px" id="stTotal">0</b></div>
+    <div class="card"><small style="color:var(--mute)">Total runs</small><b style="display:block;font-size:24px;margin-top:6px" id="stRuns">0</b></div>
+    <div class="card"><small style="color:var(--mute)">Success</small><b style="display:block;font-size:24px;margin-top:6px;color:#22C55E" id="stOk">0</b></div>
+    <div class="card"><small style="color:var(--mute)">Failed</small><b style="display:block;font-size:24px;margin-top:6px;color:#EF4444" id="stFail">0</b></div>
+  </div>
+</section>
+
+<section id="s-you">
+  <h2 style="margin-top:8px">You</h2>
+  <div id="yb"></div>
+</section>
+
+<section id="s-settings">
+  <h2 style="margin-top:8px">Settings</h2>
+  <div class="card" id="setup" style="display:none">
+    <b>Phone setup</b>
+    <div id="sst" style="margin:8px 0"></div>
+    <div class="g2" style="margin-top:10px">
+      <button class="go" style="margin:0;font-size:14px" onclick="Android.askPermissions()">Allow permissions</button>
+      <button class="go" style="margin:0;font-size:14px;background:#7a2fb0" onclick="Android.openAccessibility()">Turn on USSD</button>
+    </div>
+  </div>
+  <div id="setbody"></div>
+  <button class="go" style="background:#c0392b" onclick="confirmLogout()">Log out</button>
+</section>
+
+<section id="s-stub">
+  <h2 style="margin-top:8px" id="stt"></h2>
+  <div class="card">Coming soon.</div>
+</section>
+
+<nav role="tablist">
+  <button role="tab" aria-selected="true" onclick="tab('home')" id="n-home"><i>🏠</i>Home</button>
+  <button role="tab" aria-selected="false" onclick="tab('record')" id="n-record"><i>➕</i>Add</button>
+  <button role="tab" aria-selected="false" onclick="tab('history')" id="n-history"><i>📜</i>History</button>
+  <button role="tab" aria-selected="false" onclick="tab('stats')" id="n-stats"><i>📊</i>Stats</button>
+  <button role="tab" aria-selected="false" onclick="tab('you')" id="n-you"><i>👤</i>You</button>
+</nav>
+
+<div class="ov" id="ov" onclick="if(event.target.id=='ov'&&!busy)ovClose()">
+  <div class="ussd" onclick="event.stopPropagation()">
+    <pre id="scr"></pre>
+    <div class="in" id="inp"></div>
+    <div class="nt" id="nt"></div>
+    <div class="st" id="st"></div>
+    <button class="done" id="dn" onclick="ovClose()">Done</button>
+  </div>
+</div>
+
+<div class="ov" id="cf" onclick="if(event.target.id=='cf')cfx(0)">
+  <div class="ussd" style="background:var(--card);color:var(--ink);max-width:380px" onclick="event.stopPropagation()">
+    <b id="cft" style="font-size:16px"></b>
+    <p style="margin:10px 0 0;color:var(--mute);font-size:14px" id="cfp"></p>
+    <div class="g2" style="margin-top:16px">
+      <button class="go" style="margin:0;background:#c0392b" onclick="cfx(0)">Cancel</button>
+      <button class="go" style="margin:0" onclick="cfx(1)" id="cfy">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="dr" id="dr" onclick="dr(0)">
+  <div class="dp" onclick="event.stopPropagation()">
+    <div class="dh">
+      <div class="avatar" id="dav" style="width:56px;height:56px;font-size:20px;margin-bottom:10px">CK</div>
+      <b>CK Shortcut</b>
+      <span id="dnm" style="display:block;margin-top:4px">Guest</span>
+      <small>v1.0</small>
+    </div>
+    <button onclick="go('sendmoney')"><i>💸</i>Send Money</button>
+    <button onclick="go('bundles')"><i>📦</i>Buy Bundles</button>
+    <button onclick="go('till')"><i>🏪</i>Send from Till</button>
+    <button onclick="go('record')"><i>🎥</i>Record Function</button>
+    <button onclick="go('history')"><i>📜</i>History</button>
+    <button onclick="go('stats')"><i>📊</i>Stats</button>
+    <button onclick="go('settings')"><i>⚙️</i>Settings</button>
+    <button onclick="go('you')"><i>👤</i>You</button>
+  </div>
+</div>
+
+<script>
+  window.onerror=function(m,s,l,c,e){document.body.insertAdjacentHTML("afterbegin",'<div style="position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:14px;z-index:99999;font-family:monospace;font-size:12px">LINE '+l+': '+m+'</div>');return true};
+
+var APPNAME="CK Shortcut",OWN="",NATIVE=!!window.Android;
+var SAVED=null,ACC=null,AUTH=false,AUTHTAB="signup",SETUPOK=false,OWNERMODE=false;
+var on=true,busy=false,air=0,com=0,AIRKNOWN=false,SIMMODE="SIM 1",SMSIM="SIM 1",SIMREAD="Both";
+var CFN=null,CFNO=null,NAVH=[],VIS=0,SHOWU=0;
+var HID={air:1,com:1,tok:1},SUBEND=0,TOK=0,FULIZA=0,FULIZA_LIMIT=0,FULIZA_HIDDEN=true;
+var AUTOMATION_MODE="every",VIBE_HANDOFF=300,VIBE_EMER=15000;
+var PIN="",PIN_CONFIRM="",PINDOTS=[],PINLEN=4,FAILS=0,LOCKED=true;
+var REC_CAT="Bundles",RECORDING=false,REC_STEPS=[],REC_TX=[];
+var TX=[],SM={type:"p2p",log:[]},CUSTOM=[];
+var SMS_PERIOD="Daily",SMS_SELECTED=null,CONFIRM_ACTION=null;
+var FREQ_TYPE="apps",HIST_FILTER="all",OO="",SAVED_ACC=null;
+var OFFERS=[
+ {m:"Sh20=1GB,1hr",p:20,sp:19,auto:0},
+ {m:"Sh20=250MB,24hr",p:20,sp:20,auto:1},
+ {m:"Sh50=750MB+50SMS,24hr",p:50,sp:50,auto:0},
+ {m:"Sh99=1.5GB,24hr",p:99,sp:99,auto:0}
+];
+var SMS_BUNDLES={
+ Daily:[{n:"20 SMS",p:5,l:"20 SMS daily",exp:"End of day"},{n:"200 SMS",p:10,l:"200 SMS daily",exp:"End of day"},{n:"Unlimited SMS",p:20,l:"Unlimited SMS daily",exp:"End of day"}],
+ Weekly:[{n:"100 SMS",p:20,l:"100 SMS weekly",exp:"7 days"},{n:"1000 SMS",p:30,l:"1000 SMS weekly",exp:"7 days"},{n:"Unlimited SMS",p:50,l:"Unlimited SMS weekly",exp:"7 days"}],
+ Monthly:[{n:"1500 SMS",p:100,l:"1500 SMS monthly",exp:"30 days"},{n:"3500 SMS",p:200,l:"3500 SMS monthly",exp:"30 days"}]
+};
+
+function $(i){return document.getElementById(i)}
+function esc(x){return String(x).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+function toast(t){}
+function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function normPn(v){var d=String(v).replace(/\D/g,"");if(d.length>12||!d)return null;if(/^254[71]\d{8}$/.test(d))return"0"+d.slice(3);if(/^0[71]\d{8}$/.test(d))return d;if(/^[71]\d{8}$/.test(d))return"0"+d;return null}
+function stamp(){return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+function today(){return new Date().toLocaleDateString([],{month:"short",day:"numeric"})}
+function save(k,v){try{localStorage.setItem(k,typeof v=="string"?v:JSON.stringify(v))}catch(e){}}
+function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+
+var PAGES=["auth","setup","fuliza","home","sendmoney","bundles","smsbundle","confirm","till","record","history","stats","you","settings","stub","allactions","statements","alerts","search","lipa","withdraw","pochi"];
+function show(n){
+  PAGES.forEach(function(x){var el=$("s-"+x);if(el)el.classList.toggle("act",x==n)});
+  var tabs=["home","record","history","stats","you"];
+  tabs.forEach(function(x){var b=$("n-"+x);if(b)b.setAttribute("aria-selected",x==n)});
+  var fns={home:drawHome,history:drawHistory,stats:drawStats,you:drawYou,settings:drawSet,sendmoney:drawSendMoney,bundles:drawBundles,smsbundle:drawSmsBundle,record:drawRecord};
+  if(fns[n])fns[n]();
+  window.scrollTo(0,0);
+}
+function tab(n){NAVH=n=="home"?[]:["home"];show(n)}
+function go(n){dr(0);show(n)}
+function back(){var p=NAVH.pop();show(p||"home")}
+function nativeBack(){if($("cf").classList.contains("show")){cfx(0);return true}if($("dr").classList.contains("show")){dr(0);return true}if(document.body.getAttribute("data-pg")!="home"){back();return true}return false}
+function dr(v){$("dr").classList.toggle("show",!!v)}
+
+/* ========== LOCK SCREEN ========== */
+function showLock(){
+  $("lockScreen").style.display="flex";
+  LOCKED=true;PIN="";updatePinDots();
+  try{Fingerprint.check({title:"Unlock CK Shortcut",subtitle:"Place your finger"})}catch(e){}
+}
+function hideLock(){$("lockScreen").style.display="none";LOCKED=false}
+function updatePinDots(){
+  var dots=$("pinDots").children;
+  for(var i=0;i<dots.length;i++)dots[i].classList.toggle("filled",i<PIN.length);
+}
+function pinPress(v){
+  if(v=="del"){PIN=PIN.slice(0,-1);updatePinDots();return}
+  if(PIN.length>=PINLEN)return;
+  PIN+=v;updatePinDots();
+  if(PIN.length==PINLEN){
+    setTimeout(function(){
+      if(PIN===SAVED.pin){FAILS=0;PIN="";updatePinDots();hideLock();}
+      else{FAILS++;PIN="";updatePinDots();
+        var msg="Wrong PIN";
+        if(FAILS>=5)msg="Too many tries. Wait 30s";
+        $("lockWho").textContent=msg;
+      }
+    },150);
+  }
+}
+function forgotPin(){askC("Verify identity","Enter your ID number, phone number and year of birth to recover.","Continue",function(){go("recover")})}
+
+/* ========== AUTH ========== */
+function aerr(m){var e=$("aue");if(e)e.textContent=m}
+function setAT(v){AUTHTAB=v;drawAuth()}
+function drawAuth(){
+  var sl=(AUTHTAB==="login")||(SAVED&&AUTHTAB!=="signup");
+  $("auh").textContent=sl?"Welcome back":"Create your account to get started";
+  $("aub").innerHTML=
+    '<div class="sm" style="margin-bottom:14px">'+
+      '<button class="'+(sl?"active":"")+'" onclick="setAT(\'login\')">Log in</button>'+
+      '<button class="'+(!sl?"active":"")+'" onclick="setAT(\'signup\')">Create account</button>'+
+    '</div>'+
+    (sl?
+      '<div class="card"><label>Phone or email</label><input id="al" autocomplete="username"><label>Password</label><input id="alp" type="password" autocomplete="current-password"><p class="err" id="aue"></p><button class="go" onclick="logIn()">Log in</button></div>'
+      :
+      '<div class="card"><label>Full name</label><input id="an" autocomplete="name"><label>Business name (optional)</label><input id="ab" placeholder="e.g. My Business"><label>Phone number</label><input id="ap0" type="tel" maxlength="13"><label>Email</label><input id="ae" type="email"><label>ID number</label><input id="aid" type="tel" maxlength="12"><label>Year of birth</label><input id="adob" type="tel" maxlength="4"><label>Password (8+ chars)</label><input id="ap" type="password"><label>Confirm password</label><input id="ac" type="password"><p class="err" id="aue"></p><button class="go" onclick="signUp()">Create account</button></div>');
+  pwEyes();
+}
+function pwEyes(){
+  document.querySelectorAll("#aub input[type=password]").forEach(function(i){
+    if(i.parentNode.classList.contains("pwb"))return;
+    var w=document.createElement("div");w.className="pwb";w.style.position="relative";
+    i.parentNode.insertBefore(w,i);w.appendChild(i);
+    var b=document.createElement("button");b.type="button";
+    b.style.cssText="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--mute);cursor:pointer;font-size:16px";
+    b.textContent="👁";b.onclick=function(){i.type=i.type=="password"?"text":"password";b.textContent=i.type=="password"?"👁":"🙈"};
+    w.appendChild(b);
+  });
+}
+async function sha(t){
+  var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("ck:"+t));
+  return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("");
+}
+async function signUp(){
+  var n=$("an").value.trim(),biz=($("ab")&&$("ab").value.trim())||"Not set";
+  var p=normPn($("ap0").value),e=$("ae").value.trim().toLowerCase();
+  var id=$("aid").value.trim(),dob=$("adob").value.trim();
+  var a=$("ap").value,c=$("ac").value;
+  if(!n){aerr("Enter your full name.");return}
+  if(!p){aerr("Enter a valid phone number.");return}
+  if(!/^\S+@\S+\.\S+$/.test(e)){aerr("Enter a valid email.");return}
+  if(a.length<8){aerr("Password must be 8+ characters.");return}
+  if(!/[a-zA-Z]/.test(a)||!/[0-9]/.test(a)){aerr("Password needs letter + number.");return}
+  if(a!==c){aerr("Passwords do not match.");return}
+  if(!/@(gmail|outlook|hotmail|yahoo|live)\./i.test(e)){aerr("Use @gmail/@outlook/@hotmail/@yahoo/@live.");return}
+  if(!id||id.length<5){aerr("Enter a valid ID number.");return}
+  if(!/^\d{4}$/.test(dob)){aerr("Enter a 4-digit birth year.");return}
+  var parts=n.split(/\s+/);
+  var ini=((parts[0]||"")[0]+(parts[parts.length-1]||"")[0]).toLowerCase();
+  var recKey=(id.slice(-3))+(p.slice(-2))+(dob[2]||"0");
+  var recHash=await sha(recKey);
+  SAVED={name:n,biz:biz,phone:p,email:e,initials:ini,pin:null,recHash:recHash,owner:false,since:today()};
+  save("ck_acct",SAVED);
+  ACC=SAVED;AUTH=true;
+  save("ck_logged_in","true");save("ck_setup_done","false");
+  $("lockScreen").style.display="none";
+  show("setup");drawSetup();
+}
+async function logIn(){
+  if(!SAVED){aerr("No account on this phone.");return}
+  var l=$("al").value.trim().toLowerCase(),pw=$("alp").value;
+  if(!(l==SAVED.email||normPn(l)==SAVED.phone)){aerr("No account matches.");return}
+  var h=await sha("pw:"+pw);
+  if(h!==SAVED.pinHash){aerr("Wrong password.");return}
+  ACC=SAVED;AUTH=true;
+  save("ck_logged_in","true");
+  var sd=load("ck_setup_done",false);
+  var hasPin=!!SAVED.pin;
+  if(!hasPin){go("setup");return}
+  if(!sd){show("setup");drawSetup();return}
+  showLock();
+}
+function logOut(){
+  try{localStorage.removeItem("ck_logged_in")}catch(e){}
+  ACC=null;AUTH=false;LOCKED=false;
+  $("lockScreen").style.display="none";
+  show("auth");drawAuth();
+}
+function confirmLogout(){askC("Log out?","You will need your password to log in again.","Log out",logOut)}
+
+/* ========== SETUP ========== */
+async function finishSetup(){
+  if(!SETUPOK)return;
+  save("ck_setup_done","true");
+  if(!FULIZA_LIMIT){show("fuliza");return}
+  if(!SAVED.pin){go("createPin");return}
+  show("home");
+}
+function drawSetup(){
+  var s=setupState();
+  var rows=[
+    ["perm","Allow permissions","Calls, SMS, phone, contacts","askPerm()"],
+    ["acc","Turn on USSD service","Required for silent flows","askAcc()"],
+    ["bat","Unrestricted battery","Keep running in background","askBat()"]
+  ];
+  $("stb").innerHTML=rows.map(function(r){
+    return '<div class="card row"><div><b>'+(s[r[0]]?'✓ ':'○ ')+r[1]+'</b><br><small style="color:var(--mute)">'+r[2]+'</small></div>'+(s[r[0]]?'<span class="tag">Done</span>':'<button class="chip" onclick="'+r[3]+'">Allow</button>')+'</div>';
+  }).join("");
+  SETUPOK=!!(s.perm&&s.acc&&s.bat);
+  $("stc").disabled=!SETUPOK;
+}
+function setupState(){
+  if(NATIVE){try{var s=JSON.parse(Android.status());return{perm:s.call&&s.sms&&s.phone&&s.contacts,acc:s.acc,bat:s.battery}}catch(e){return{perm:0,acc:0,bat:0}}}
+  return{perm:1,acc:1,bat:1};
+}
+function askPerm(){if(NATIVE)Android.askPermissions();setTimeout(drawSetup,1500)}
+function askAcc(){if(NATIVE)Android.openAccessibility();setTimeout(drawSetup,2500)}
+function askBat(){if(NATIVE)Android.askBattery();setTimeout(drawSetup,2500)}
+
+/* ========== FULIZA ========== */
+function saveFulizaLimit(){
+  var v=parseInt($("fulizaLimit").value.replace(/\D/g,""))||0;
+  if(v<1){alert("Enter a valid amount");return}
+  FULIZA_LIMIT=v;save("ck_fuliza_limit",v);
+  if(!SAVED.pin){go("createPin")}else{show("home");drawHome()}
+}
+function skipFuliza(){if(!SAVED.pin){go("createPin")}else{show("home");drawHome()}}
+
+/* ========== PIN SETUP ========== */
+function createPinScreen(){
+  $("s-setup").classList.remove("act");
+  PAGES.forEach(function(x){var el=$("s-"+x);if(el)el.classList.remove("act")});
+  $("lockScreen").style.display="flex";
+  $("lockGreeting").textContent="Create your app PIN";
+  $("lockWho").textContent="Choose 4-6 digits";
+  PIN="";PIN_CONFIRM="";PINLEN=4;updatePinDots();
+}
+function confirmPinScreen(){
+  $("lockGreeting").textContent="Confirm your PIN";
+  $("lockWho").textContent="Enter it again";
+  PIN_CONFIRM=PIN;PIN="";updatePinDots();
+}
+
+/* ========== HOME ========== */
+function greeting(){
+  var h=new Date().getHours();
+  if(h>=5&&h<12)return{em:"🌅",t:"Good morning"};
+  if(h>=12&&h<17)return{em:"☀️",t:"Good afternoon"};
+  if(h>=17&&h<22)return{em:"👋",t:"Good evening"};
+  return{em:"🌙",t:"Good night"};
+}
+function surname(n){var p=String(n||"").split(/\s+/);return p[p.length-1]||p[0]||"friend"}
+function drawHome(){
+  if(!ACC)return;
+  var g=greeting();
+  $("hAv").textContent=ACC.initials?ACC.initials.toUpperCase():"CK";
+  $("hGreet").textContent=g.t;
+  $("hName").textContent=surname(ACC.name)+" "+g.em;
+  $("mpAmt").textContent=HID.air?"Ksh ****":"Ksh "+(com||0).toFixed(2);
+  $("airAmt").textContent=HID.air?"Ksh ****":"Ksh "+(air||0).toFixed(2);
+  $("airSync").textContent=AIRKNOWN?"Tap to check balance":"Synced recently";
+  $("mpFul").textContent=FULIZA_HIDDEN?"👁 Fuliza hidden":"Fuliza: Ksh "+(FULIZA_LIMIT-FULIZA).toFixed(2)+" available of Ksh "+FULIZA_LIMIT;
+  $("mpSim").textContent=SIMMODE+" ▾";
+  $("airSim").textContent=SIMMODE+" ▾";
+  drawFreq();
+}
+function toggleBal(k){HID[k]=!HID[k]?1:0;drawHome()}
+function pickSim(k){askC("Choose SIM","Which SIM should we use?","SIM 1",function(){SIMMODE="SIM 1";save("ck_simmode",SIMMODE);drawHome()},function(){SIMMODE="SIM 2";save("ck_simmode",SIMMODE);drawHome()})}
+function toggleFreq(){var w=$("freqWrap");var v=w.style.display=="none";w.style.display=v?"block":"none";$("freqTog").textContent=v?"▼":"▲"}
+function drawFreq(){
+  var data={
+    apps:[{ico:"📶",n:"1GB Data",p:19},{ico:"💬",n:"200 SMS",p:10},{ico:"☎️",n:"Airtime 100",p:100}],
+    send:[{ico:"💸",n:"Send Mum",p:500},{ico:"📱",n:"Pochi",p:200},{ico:"🏪",n:"Till Send",p:100}],
+    pay:[{ico:"🛒",n:"Lipa",p:0},{ico:"💡",n:"KPLC",p:100},{ico:"📺",n:"DSTV",p:400}],
+    bundles:[{ico:"📦",n:"1GB",p:20},{ico:"💬",n:"SMS 200",p:10},{ico:"📶",n:"2GB",p:50}]
+  };
+  $("freqList").innerHTML=(data[FREQ_TYPE]||[]).map(function(x){
+    return '<div class="freq-item" onclick="runFreq(\''+esc(x.n)+'\')"><div class="ico">'+x.ico+'</div><b>'+x.n+'</b><small>Ksh '+x.p+'</small></div>';
+  }).join("");
+}
+function setFreq(t,el){FREQ_TYPE=t;document.querySelectorAll("#s-home .freq-tabs button").forEach(function(b){b.classList.remove("active")});el.classList.add("active");drawFreq()}
+function runFreq(n){go("sendmoney")}
+
+/* ========== AIRTIME ========== */
+async function topupAirtime(){
+  if(NATIVE){try{Android.ussdQuick("topup","*144#",1)}catch(e){}}
+  else{await wait(500);air=Math.random()*200;AIRKNOWN=true;drawHome()}
+  }
+  /* ========== SEND MONEY ========== */
+var SM_TYPES=[
+  ["p2p","Send Money Any Network","*334# → Send Money → Any Network"],
+  ["pochi","Pochi la Biashara","*334# → Send Money → Pochi"],
+  ["paybill","Paybill","*334# → Lipa na M-PESA → Pay Bill"],
+  ["buygoods","Buy Goods (Till)","*334# → Lipa na M-PESA → Buy Goods"],
+  ["till2","Send from Till","*234*2*5822712*2*3*...#"]
+];
+function drawSendMoney(){
+  $("smTypes").innerHTML=SM_TYPES.map(function(t){
+    var on=SM.type==t[0];
+    return '<button class="offer" aria-pressed="'+on+'" onclick="SM.type=\''+t[0]+'\';drawSendMoney()"><div><strong>'+t[1]+'</strong><span>'+t[2]+'</span></div><strong>'+(on?'✓':'›')+'</strong></button>';
+  }).join("");
+  var f="";
+  if(SM.type=="p2p"||SM.type=="pochi"){
+    f='<label>Recipient phone</label><input id="smPhone" type="tel" maxlength="13" placeholder="07XX XXX XXX"><label>Amount (Ksh)</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
+  }else if(SM.type=="paybill"){
+    f='<label>Business number</label><input id="smBiz" type="tel" inputmode="numeric"><label>Account number</label><input id="smAcct" type="tel" inputmode="numeric"><label>Amount (Ksh)</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
+  }else if(SM.type=="buygoods"){
+    f='<label>Till number</label><input id="smTill" type="tel" inputmode="numeric"><label>Amount (Ksh)</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
+  }else{
+    f='<label>Recipient phone</label><input id="smPhone" type="tel" maxlength="13"><label>Amount (Ksh)</label><input id="smAmt" type="tel" inputmode="numeric"><label>Customer ID (2 letters)</label><input id="smId" maxlength="2" oninput="this.value=this.value.replace(/[^a-zA-Z]/g,\'\').toLowerCase()"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
+  }
+  $("smForm").innerHTML='<div class="card">'+f+'<button class="go" onclick="executeSendMoney()">Proceed</button></div>';
+  $("smLog").innerHTML=(SM.log||[]).slice(0,10).map(function(x){return '<div class="card row"><div><b>'+esc(x.type)+'</b><br><small style="color:var(--mute)">'+esc(x.to)+' · '+x.t+'</small></div><b>Ksh '+x.amt+'</b></div>'}).join("")||'<div class="card">No transfers yet.</div>';
+}
+function needPermissions(){
+  if(!NATIVE)return true;
+  try{
+    var st=JSON.parse(Android.status());
+    if(!st.acc){askC("USSD service needed","Turn ON the CK Shortcut USSD service in Accessibility settings.","Open Settings",function(){Android.openAccessibility()});return false}
+    if(!st.call){askC("Phone permission needed","Allow Phone permission for CK Shortcut.","Open Settings",function(){Android.askPermissions()});return false}
+    return true;
+  }catch(e){return true}
+}
+async function executeSendMoney(){
+  if(busy)return;
+  if(!needPermissions())return;
+  var t=SM.type,c="",st=[],to="",am=0,pin="";
+  if(t=="p2p"||t=="pochi"){
+    to=normPn($("smPhone").value);am=parseInt($("smAmt").value.replace(/\D/g,""));pin=$("smPin").value;
+    if(!to||!am||!pin)return;
+    c="*334#";
+    st=[{t:"find",k:"send money"},{t:"find",k:t=="pochi"?"pochi":"any network"},{t:"text",v:to},{t:"text",v:String(am)},{t:"text",v:pin},{t:"stop"}];
+  }else if(t=="paybill"){
+    var bz=$("smBiz").value.replace(/\D/g,""),ac=$("smAcct").value.replace(/\D/g,"");
+    am=parseInt($("smAmt").value.replace(/\D/g,""));pin=$("smPin").value;
+    if(!bz||!ac||!am||!pin)return;
+    c="*334#";
+    st=[{t:"find",k:"lipa na"},{t:"find",k:"pay bill"},{t:"text",v:bz},{t:"text",v:ac},{t:"text",v:String(am)},{t:"text",v:pin},{t:"stop"}];
+  }else if(t=="buygoods"){
+    var til=$("smTill").value.replace(/\D/g,"");
+    am=parseInt($("smAmt").value.replace(/\D/g,""));pin=$("smPin").value;
+    if(!til||!am||!pin)return;
+    c="*334#";
+    st=[{t:"find",k:"lipa na"},{t:"find",k:"buy goods"},{t:"text",v:til},{t:"text",v:String(am)},{t:"text",v:pin},{t:"stop"}];
+  }else{
+    to=normPn($("smPhone").value);am=parseInt($("smAmt").value.replace(/\D/g,""));
+    var id=$("smId").value.trim();pin=$("smPin").value;
+    if(!to||!am||!/^[A-Za-z]{2}$/.test(id)||!pin)return;
+    c="*234*2*5822712*2*3*"+to+"*"+am+"#";
+    st=[{t:"text",v:id.toLowerCase()},{t:"text",v:pin},{t:"stop"}];
+  }
+  var ok=await askYN("Confirm","Send Ksh "+am+" to "+to+"?","Proceed");
+  if(!ok)return;
+  if(NATIVE){Android.vibrate(VIBE_HANDOFF)}
+  busy=true;openOv();
+  if(NATIVE){
+    var r=await ussd(c,st,simNo());
+    busy=false;
+    if(r.ok){SM.log.unshift({type:t,to:to,amt:am,t:stamp()});drawSendMoney();ovClose()}
+  }else{
+    await step("Dialing...",c);await wait(400);ovClose();busy=false;
+    SM.log.unshift({type:t,to:to,amt:am,t:stamp()});drawSendMoney();
+  }
+}
+
+/* ========== BUNDLES ========== */
+function drawBundles(){}
+function chooseBundle(t){
+  if(t=="data"){
+    askC("Open *544#?","The Safaricom menu will open. You pick and confirm yourself.","Open",function(){
+      if(NATIVE)Android.ussd("b_"+Date.now(),"*544#","[]",simNo(),60);
+    });
+  }else if(t=="sms"){go("smsbundle")}
+}
+function drawSmsBundle(){
+  $("smsRecipient").value=ACC?ACC.phone:"";
+  var list=SMS_BUNDLES[SMS_PERIOD]||[];
+  $("smsList").innerHTML=list.map(function(b,i){
+    var on=SMS_SELECTED===i;
+    return '<button class="offer" aria-pressed="'+on+'" onclick="SMS_SELECTED='+i+';drawSmsBundle()"><div><strong>'+b.l+'</strong><span>Valid: '+b.exp+'</span></div><strong>Ksh '+b.p+'</strong></button>';
+  }).join("");
+  if(SMS_SELECTED!==null&&SMS_SELECTED!==undefined){
+    $("smsList").innerHTML+='<button class="go" onclick="confirmSmsBundle()">Continue — Ksh '+list[SMS_SELECTED].p+'</button>';
+  }
+}
+function setSmsPeriod(p,el){SMS_PERIOD=p;SMS_SELECTED=null;document.querySelectorAll("#smsTabs button").forEach(function(b){b.classList.remove("active")});el.classList.add("active");drawSmsBundle()}
+function confirmSmsBundle(){
+  var list=SMS_BUNDLES[SMS_PERIOD];
+  var b=list[SMS_SELECTED];
+  var to=normPn($("smsRecipient").value);
+  if(!to){alert("Enter a valid number");return}
+  var c={name:b.l,amount:b.p,period:SMS_PERIOD,recipient:to,type:"sms"};
+  CONFIRM_ACTION=c;showConfirm();
+}
+function showConfirm(){
+  var c=CONFIRM_ACTION;
+  $("confirmBody").innerHTML=
+    '<div class="card"><b>'+esc(c.name)+'</b><br><small style="color:var(--mute)">To '+esc(c.recipient)+'</small><div style="font-size:26px;font-weight:800;margin:12px 0">Ksh '+c.amount+'</div></div>'+
+    '<h2>Pay with</h2>'+
+    '<div class="card" style="padding:0;overflow:hidden">'+
+      '<button class="offer" onclick="runConfirm(\'airtime\')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)"><div><strong>☎️ Airtime</strong><span>From SIM 1 balance</span></div><strong>›</strong></button>'+
+      '<button class="offer" onclick="runConfirm(\'mpesa\')" style="border-radius:0;border:0"><div><strong>💳 M-Pesa</strong><span>From wallet · PIN</span></div><strong>›</strong></button>'+
+    '</div>';
+  show("confirm");
+}
+async function runConfirm(pay){
+  var c=CONFIRM_ACTION;
+  if(!c)return;
+  if(NATIVE)Android.vibrate(VIBE_HANDOFF);
+  var steps=[];
+  var code="*544#";
+  if(pay=="mpesa"){
+    steps=[{t:"find",k:"buy bundles"},{t:"find",k:c.period.toLowerCase()},{t:"find",k:c.name.toLowerCase()},{t:"number",v:c.recipient},{t:"find",k:"mpesa"},{t:"stop"}];
+  }else{
+    steps=[{t:"find",k:"buy bundles"},{t:"find",k:c.period.toLowerCase()},{t:"find",k:c.name.toLowerCase()},{t:"number",v:c.recipient},{t:"find",k:"airtime"},{t:"stop"}];
+  }
+  busy=true;openOv();
+  if(NATIVE){
+    var r=await ussd(code,steps,simNo());
+    busy=false;
+    if(r.ok){
+      TX.unshift({n:c.name,num:c.recipient,p:c.amount,t:stamp(),d:0,ts:Date.now(),st:"SENT",src:"bundle"});
+      save("ck_tx",TX);
+      show("home");drawHome();
+    }
+    ovClose();
+  }else{
+    await step("Dialing...",code);await wait(600);ovClose();busy=false;
+    TX.unshift({n:c.name,num:c.recipient,p:c.amount,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"bundle"});
+    save("ck_tx",TX);
+    show("home");drawHome();
+  }
+}
+
+/* ========== TILL ========== */
+function drawTill(){
+  if(ACC&&ACC.initials&&!$("tillId").value)$("tillId").value=ACC.initials;
+  var log=load("ck_till",[]);
+  $("tillLog").innerHTML=log.slice(0,10).map(function(x){return '<div class="card row"><div><b>'+esc(x.to)+'</b><br><small style="color:var(--mute)">'+x.t+'</small></div><b>Ksh '+x.amt+'</b></div>'}).join("")||'<div class="card">No transfers yet.</div>';
+}
+async function runTill(){
+  if(busy)return;
+  if(!needPermissions())return;
+  var to=normPn($("tillTo").value),am=parseInt($("tillAmt").value.replace(/\D/g,""));
+  var id=$("tillId").value.trim(),pin=$("tillPin").value;
+  if(!to||!am||!/^[A-Za-z]{2}$/.test(id)||!pin)return;
+  var ok=await askYN("Confirm","Send Ksh "+am+" to "+to+"?","Proceed");
+  if(!ok)return;
+  if(NATIVE)Android.vibrate(VIBE_HANDOFF);
+  busy=true;openOv();
+  var c="*234*2*5822712*2*3*"+to+"*"+am+"#";
+  var st=[{t:"text",v:id.toLowerCase()},{t:"text",v:pin},{t:"stop"}];
+  if(NATIVE){
+    var r=await ussd(c,st,simNo());
+    busy=false;
+    if(r.ok){
+      var log=load("ck_till",[]);
+      log.unshift({to:to,amt:am,t:stamp()});
+      save("ck_till",log.slice(0,50));
+      $("tillPin").value="";
+      drawTill();
+    }
+    ovClose();
+  }else{
+    await step("Dialing...",c);await wait(500);ovClose();busy=false;
+  }
+}
+
+/* ========== RECORD ========== */
+function setRecCat(c,el){REC_CAT=c;document.querySelectorAll("#recCat button").forEach(function(b){b.classList.remove("active")});el.classList.add("active")}
+function drawRecord(){
+  $("recStatus").innerHTML=RECORDING?
+    '<div class="card" style="background:var(--brand2);border-color:var(--brand)"><b style="color:var(--brand)">🔴 Recording...</b><br><small>Dial your USSD code and complete the flow. Come back and tap Done.</small><br><button class="go" style="margin-top:12px" onclick="stopRecording()">I\'m Done</button></div>':
+    '';
+}
+function startRecording(){
+  var name=$("recName").value.trim();
+  if(!name){alert("Enter a function name");return}
+  RECORDING=true;REC_STEPS=[];
+  drawRecord();
+  if(NATIVE){Android.ussd("rec_"+Date.now(),"*544#","[]",simNo(),120)}
+}
+function stopRecording(){
+  RECORDING=false;
+  var name=$("recName").value.trim();
+  CUSTOM.push({name:name,cat:REC_CAT,steps:REC_STEPS});
+  save("ck_custom",CUSTOM);
+  $("recName").value="";
+  drawRecord();
+  show("home");drawHome();
+}
+
+/* ========== HISTORY ========== */
+function drawHistory(){
+  var tx=TX.filter(function(x){return HIST_FILTER=="all"||(HIST_FILTER=="success"&&x.st=="SUCCESS")||(HIST_FILTER=="failed"&&x.st=="FAILED")});
+  $("histList").innerHTML=tx.slice(0,50).map(function(t,i){
+    return '<div class="card row"><div><b>'+esc(t.n||"Shortcut")+'</b><br><small style="color:var(--mute)">'+esc(t.num||"")+' · '+(t.d?t.d+'d ago':'Today')+', '+t.t+'</small></div><div style="text-align:right"><b>Ksh '+t.p+'</b><br><span class="tag'+(t.st=="FAILED"?" fail":"")+'">'+t.st+'</span></div></div>';
+  }).join("")||'<div class="card">No history yet.</div>';
+}
+function setHistFilter(f,el){HIST_FILTER=f;document.querySelectorAll("#histFilters button").forEach(function(b){b.classList.remove("active")});el.classList.add("active");drawHistory()}
+
+/* ========== STATS ========== */
+function drawStats(){
+  $("stTotal").textContent=CUSTOM.length;
+  $("stRuns").textContent=TX.length;
+  $("stOk").textContent=TX.filter(function(t){return t.st=="SUCCESS"}).length;
+  $("stFail").textContent=TX.filter(function(t){return t.st=="FAILED"}).length;
+}
+
+/* ========== YOU ========== */
+function drawYou(){
+  if(!ACC)return;
+  var ini=ACC.initials?ACC.initials.toUpperCase():"CK";
+  var rows=[["Name",ACC.name],["Business",ACC.biz||"Not set"],["Phone",ACC.phone],["Email",ACC.email],["Member since",ACC.since||today()],["Account","Active"]];
+  $("yb").innerHTML=
+    '<div class="card" style="text-align:center;background:linear-gradient(#0F2A22,#0A1F17);border:0">'+
+      '<div class="avatar" style="margin:0 auto 10px;width:80px;height:80px;font-size:30px">'+ini+'</div>'+
+      '<b style="font-size:20px">'+esc(ACC.name)+'</b><br>'+
+      '<small style="color:var(--mute)">'+esc(ACC.biz||"CK Shortcut user")+'</small>'+
+    '</div>'+
+    '<div class="card" style="margin-top:12px">'+
+      rows.map(function(r){return '<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><small style="color:var(--mute)">'+r[0]+'</small><b style="text-align:right">'+esc(r[1])+'</b></div>'}).join("")+
+    '</div>'+
+    '<div class="g2" style="margin-top:12px">'+
+      '<button class="go" style="margin:0" onclick="go(\'settings\')">Settings</button>'+
+      '<button class="go" style="margin:0;background:#c0392b" onclick="confirmLogout()">Log out</button>'+
+    '</div>';
+}
+
+/* ========== SETTINGS ========== */
+function drawSet(){
+  $("setbody").innerHTML=
+    '<div class="card"><b>SIM routing</b><label>Dial USSD with</label>'+
+      '<div class="sm">'+["SIM 1","SIM 2","Both"].map(function(s){return '<button class="'+(SIMMODE==s?'active':'')+'" onclick="SIMMODE=\''+s+'\';save(\'ck_simmode\',SIMMODE);drawSet()">'+s+'</button>'}).join("")+'</div>'+
+    '</div>'+
+    '<div class="card"><b>Transaction security</b><label>Ask for PIN</label>'+
+      '<div class="sm">'+
+        '<button class="'+(AUTOMATION_MODE=="every"?'active':'')+'" onclick="AUTOMATION_MODE=\'every\';save(\'ck_authmode\',AUTOMATION_MODE);drawSet()">Every transaction</button>'+
+        '<button class="'+(AUTOMATION_MODE=="session"?'active':'')+'" onclick="AUTOMATION_MODE=\'session\';save(\'ck_authmode\',AUTOMATION_MODE);drawSet()">Once per session</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="card"><b>Haptics</b><label>Handoff vibration (ms)</label>'+
+      '<div class="sm">'+
+        '<button class="'+(VIBE_HANDOFF==200?'active':'')+'" onclick="VIBE_HANDOFF=200;save(\'ck_vibe_h\',VIBE_HANDOFF);drawSet()">Short (200)</button>'+
+        '<button class="'+(VIBE_HANDOFF==300?'active':'')+'" onclick="VIBE_HANDOFF=300;save(\'ck_vibe_h\',VIBE_HANDOFF);drawSet()">Medium (300)</button>'+
+        '<button class="'+(VIBE_HANDOFF==500?'active':'')+'" onclick="VIBE_HANDOFF=500;save(\'ck_vibe_h\',VIBE_HANDOFF);drawSet()">Long (500)</button>'+
+      '</div>'+
+      '<button class="chip" style="width:100%;padding:10px;margin-top:8px" onclick="Android.vibrate(VIBE_HANDOFF)">Preview</button>'+
+    '</div>'+
+    '<div class="card"><b>Fuliza limit</b><label>Current limit (Ksh)</label><input id="fulizaSet" type="tel" value="'+FULIZA_LIMIT+'"><button class="go" onclick="FULIZA_LIMIT=parseInt($(\'fulizaSet\').value)||0;save(\'ck_fuliza_limit\',FULIZA_LIMIT);drawHome()">Save</button></div>'+
+    '<div class="card"><b>Setup status</b><div id="sst" style="margin:8px 0"></div><div class="g2"><button class="go" style="margin:0;font-size:13px" onclick="Android.askPermissions()">Permissions</button><button class="go" style="margin:0;font-size:13px;background:#7a2fb0" onclick="Android.openAccessibility()">USSD</button></div></div>';
+  drawSetupInside();
+}
+function drawSetupInside(){
+  var s=setupState();
+  $("sst").innerHTML=[["Permissions",s.perm],["USSD service",s.acc],["Battery",s.bat]].map(function(x){return(x[1]?"✓ ":"○ ")+x[0]}).join("<br>");
+}
+
+/* ========== USSD RUNNER ========== */
+var UQ=Promise.resolve(),UCB={},AIRBUSY=false;
+function simNo(){return SIMMODE=="SIM 2"?2:1}
+async function ussd(c,st,sim){
+  if(!NATIVE)return{ok:false,text:"no native"};
+  return UQ.then(function(){
+    return new Promise(function(r){
+      var id="u"+Date.now()+Math.random();
+      UCB[id]=r;
+      try{Android.ussd(id,c,JSON.stringify(st),sim,30)}catch(e){delete UCB[id];r({ok:false,text:String(e)})}
+    });
+  });
+}
+async function ussdq(c,sim){
+  if(!NATIVE)return{ok:false,text:"no native"};
+  return new Promise(function(r){
+    var id="q"+Date.now()+Math.random();
+    UCB[id]=r;
+    try{Android.ussdQuick(id,c,sim)}catch(e){delete UCB[id];r({ok:false,text:String(e)})}
+  });
+}
+window.onUssdDone=function(id,ok,t){var f=UCB[id];delete UCB[id];if(f)f({ok:ok,text:t})};
+window.onUssdAsk=function(id,t){askC("Confirm",t,"Yes",function(){Android.ussdAnswer(true)},function(){Android.ussdAnswer(false)})};
+window.drainSms=function(){
+  if(!NATIVE)return;
+  try{
+    JSON.parse(Android.takeSms()||"[]").forEach(function(m){
+      if(m.b&&m.b.indexOf("Fuliza")>-1){
+        var fm=m.b.match(/outstanding\s+Fuliza\s+balance\s+is\s+Ksh\s*([\d,]+(?:\.\d+)?)/i);
+        if(fm){FULIZA=parseFloat(fm[1].replace(/,/g,""));save("ck_fuliza",FULIZA);drawHome()}
+      }
+      if(m.b&&m.b.indexOf("balance")>-1){
+        var bm=m.b.match(/balance\s+is\s+Ksh\s*([\d,]+(?:\.\d+)?)/i);
+        if(bm){com=parseFloat(bm[1].replace(/,/g,""));save("ck_mpesa_bal",com);drawHome()}
+      }
+    });
+  }catch(e){}
+};
+window.refreshSetup=function(){if(document.body.getAttribute("data-pg")=="setup")drawSetup()};
+
+/* ========== DIALOGS ========== */
+function openOv(f){VIS=f||SHOWU;$("ov").classList.add("show");$("dn").style.display="none"}
+function ovClose(){$("ov").classList.remove("show")}
+async function step(t,inp){$("scr").textContent=t;$("inp").textContent="";$("nt").textContent="";await wait(VIS?850:120);$("inp").textContent=inp;await wait(VIS?750:120)}
+function askC(t,p,l,fn,no){CFN=fn;CFNO=no||null;$("cft").textContent=t;$("cfp").textContent=p;$("cfy").textContent=l;$("cf").classList.add("show")}
+function cfx(v){$("cf").classList.remove("show");var f=CFN,c=CFNO;CFN=null;CFNO=null;if(v&&f)f();else if(!v&&c)c()}
+function askYN(t,p,l){return new Promise(function(res){askC(t,p,l,function(){res(true)},function(){res(false)})})}
+
+/* ========== BOOT ========== */
+document.addEventListener("DOMContentLoaded",function(){
+  SAVED=load("ck_acct",null);
+  TX=load("ck_tx",[]);
+  CUSTOM=load("ck_custom",[]);
+  SIMMODE=load("ck_simmode","SIM 1");
+  AUTOMATION_MODE=load("ck_authmode","every");
+  VIBE_HANDOFF=load("ck_vibe_h",300);
+  FULIZA_LIMIT=load("ck_fuliza_limit",0);
+  FULIZA=load("ck_fuliza",0);
+  com=load("ck_mpesa_bal",0);
+  air=load("ck_air",0);
+  document.body.setAttribute("data-pg","home");
+  var li=load("ck_logged_in",false);
+  if(!li||!SAVED){
+    AUTH=false;
+    show("auth");drawAuth();
+    $("lockScreen").style.display="none";
+    return;
+  }
+  AUTH=true;ACC=SAVED;
+  var sd=load("ck_setup_done",false);
+  var hasPin=!!SAVED.pin;
+  if(!hasPin){go("setup");drawSetup();return}
+  if(!sd){show("setup");drawSetup();return}
+  drawHome();
+  showLock();
+});
+document.addEventListener("click",function(){},true);
+setInterval(function(){if(ACC&&document.body.getAttribute("data-pg")=="home")drawHome()},60000);
+</script>
+</body>
+</html>
