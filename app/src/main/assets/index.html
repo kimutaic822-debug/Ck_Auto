@@ -9,8 +9,6 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:520px;margin-inline:auto;padding-bottom:84px;padding-top:env(safe-area-inset-top,0px)}
 h1{font-size:20px;margin:0}h2{font-size:16px;margin:16px 0 8px}
-header{padding:16px;display:flex;justify-content:space-between;align-items:center}
-.ham{background:none;border:0;color:var(--ink);font-size:24px;cursor:pointer}
 section{display:none;padding:0 14px}section.act{display:block}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
@@ -23,16 +21,11 @@ textarea{min-height:100px}
 .go{width:100%;margin-top:12px;padding:14px;font:inherit;font-weight:700;font-size:16px;border:0;border-radius:12px;background:var(--brand);color:#0E1412;cursor:pointer}
 .go:disabled{opacity:.4}
 .chip{display:inline-block;background:var(--brand2);color:var(--brand);border:0;border-radius:99px;padding:6px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
-.chip.alt{background:#1F2A22;color:var(--ink)}
 .list{display:grid;gap:8px}
 .sm{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 .sm button{font:inherit;font-size:12px;padding:7px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
 .sm button.active{background:var(--brand);color:#0E1412;border-color:var(--brand);font-weight:700}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.sw button{width:46px;height:26px;border-radius:13px;border:0;background:var(--line);position:relative;cursor:pointer}
-.sw button::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
-.sw button.on{background:var(--brand)}.sw button.on::after{left:23px}
 .greeting{display:flex;justify-content:space-between;align-items:center;padding:0 14px 14px}
 .avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#FBBF24,#EF4444);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#0E1412}
 .greet-text{flex:1;margin-left:12px}
@@ -47,7 +40,7 @@ textarea{min-height:100px}
 .balcard.airtime{background:linear-gradient(160deg,#1A2A3F,#0F1A2A)}
 .balcard .top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mute)}
 .simchip{background:rgba(255,255,255,.08);color:var(--ink);border:0;padding:4px 10px;border-radius:99px;font:inherit;font-size:11px;cursor:pointer}
-.eye{background:none;border:0;color:var(--mute);cursor:pointer;padding:0;font-size:16px}
+.eye{background:none;border:0;color:var(--ink);cursor:pointer;padding:6px;font-size:24px;line-height:1}
 .balcard .amt{font-size:28px;font-weight:800;margin:10px 0 6px;letter-spacing:-.5px}
 .balcard .sub{font-size:11px;color:var(--mute);margin-bottom:10px}
 .balcard .viewbtn{width:100%;padding:10px;border-radius:10px;background:transparent;border:1.5px solid var(--brand);color:var(--brand);font-weight:700;font-size:13px;cursor:pointer}
@@ -168,6 +161,7 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
   </div>
   <button class="chip" style="width:100%;text-align:center;padding:12px" onclick="skipFuliza()">Skip for now</button>
 </section>
+
 <section id="s-home" class="act">
   <div class="greeting">
     <div class="avatar" id="hAv" onclick="go('you')">CK</div>
@@ -185,7 +179,7 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
     <div class="balcard mpesa">
       <div class="top">
         <button class="simchip" id="mpSim" onclick="pickSim('mpesa')">SIM 1 ▾</button>
-        <button class="eye" onclick="toggleBal('mpesa')" id="mpEye">👁</button>
+        <button class="eye" onclick="toggleBal('com')" id="mpEye">👁</button>
       </div>
       <div class="amt" id="mpAmt">Ksh ****</div>
       <div class="sub" id="mpFul">👁 Fuliza hidden</div>
@@ -194,7 +188,7 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
     <div class="balcard airtime">
       <div class="top">
         <button class="simchip" id="airSim" onclick="pickSim('airtime')">SIM 1 ▾</button>
-        <button class="eye" onclick="toggleBal('airtime')" id="airEye">👁</button>
+        <button class="eye" onclick="toggleBal('air')" id="airEye">👁</button>
       </div>
       <div class="amt" id="airAmt">Ksh ****</div>
       <div class="sub sync-ts" id="airSync">Tap to check balance</div>
@@ -204,7 +198,7 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 
   <div class="sec-hdr"><h2>Quick Actions</h2><button class="chip" onclick="show('stub')">View all</button></div>
   <div class="qa">
-    <button class="qa-btn" onclick="go('sendmoney')"><div class="qa-ico">💸</div>Send Money</button>
+    <button class="qa-btn" onclick="branchSendMoney()"><div class="qa-ico">💸</div>Send Money</button>
     <button class="qa-btn" onclick="quickAction('p2p')"><div class="qa-ico">📤</div>P2P</button>
     <button class="qa-btn" onclick="quickAction('pochi')"><div class="qa-ico">📱</div>Pochi</button>
     <button class="qa-btn" onclick="quickAction('paybill')"><div class="qa-ico">🛒</div>Paybill</button>
@@ -306,10 +300,14 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
   <h2 style="margin-top:8px">Record a Function</h2>
   <div class="card" style="text-align:center;padding:22px">
     <div style="font-size:44px;margin-bottom:10px">🎥</div>
-    <b>Record a Function</b>
-    <p class="note" style="margin-top:8px">Do the USSD flow once yourself. We'll watch and save every step, then ask you only for variables next time.</p>
+    <b>Set once, use forever</b>
+    <p class="note" style="margin-top:8px">Enter the base code below. Then dial it and complete the flow once. We save every step — next time, just tap and go.</p>
   </div>
-  <label>Function name</label><input id="recName" placeholder="e.g. Buy Airtime">
+  <label>Function name</label>
+  <input id="recName" placeholder="e.g. Buy Airtime">
+  <label>Base USSD code</label>
+  <input id="recBase" placeholder="e.g. *544# or *334#">
+  <p class="note">This is the code you'll dial to start the flow. Set once, use forever.</p>
   <label>Category</label>
   <div class="sm" id="recCat">
     <button class="active" onclick="setRecCat('Bundles',this)">Bundles</button>
@@ -334,6 +332,19 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 
 <section id="s-stats">
   <h2 style="margin-top:8px">Stats</h2>
+  <div class="card">
+    <b>Balances</b>
+    <div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><small style="color:var(--mute)">M-Pesa</small><b>Ksh <span id="statMp">--</span></b></div>
+    <div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><small style="color:var(--mute)">Airtime</small><b>Ksh <span id="statAir">--</span></b></div>
+    <div class="row" style="padding:10px 0"><small style="color:var(--mute)">Fuliza available</small><b>Ksh <span id="statFul">--</span></b></div>
+  </div>
+  <div class="card">
+    <b>Transactions by type</b>
+    <div style="display:flex;align-items:center;gap:16px;margin-top:12px">
+      <div id="pieChart" style="width:120px;height:120px;border-radius:50%;flex:none;background:conic-gradient(#26332B 0 100%)"></div>
+      <div id="pieLegend" style="flex:1;font-size:12px"></div>
+    </div>
+  </div>
   <div class="g2">
     <div class="card"><small style="color:var(--mute)">Total shortcuts</small><b style="display:block;font-size:24px;margin-top:6px" id="stTotal">0</b></div>
     <div class="card"><small style="color:var(--mute)">Total runs</small><b style="display:block;font-size:24px;margin-top:6px" id="stRuns">0</b></div>
@@ -416,10 +427,26 @@ var CFN=null,CFNO=null,NAVH=[],VIS=0,SHOWU=0;
 var HID={air:1,com:1,tok:1},SUBEND=0,TOK=0,FULIZA=0,FULIZA_LIMIT=0,FULIZA_HIDDEN=true;
 var AUTOMATION_MODE="every",VIBE_HANDOFF=300,VIBE_EMER=15000;
 var PIN="",PIN_CONFIRM="",PINLEN=4,FAILS=0,LOCKED=true,PIN_PHASE="unlock";
-var REC_CAT="Bundles",RECORDING=false,REC_STEPS=[];
+var REC_CAT="Bundles",RECORDING=false,REC_STEPS=[],REC_BASE="*544#";
 var TX=[],SM={type:"p2p",log:[]},CUSTOM=[];
 var SMS_PERIOD="Daily",SMS_SELECTED=null,CONFIRM_ACTION=null;
 var FREQ_TYPE="send",HIST_FILTER="all",OO="";
+var SMS_BUNDLES={
+  Daily:[
+    {n:"20 SMS",p:5,l:"20 SMS daily",exp:"End of day"},
+    {n:"200 SMS",p:10,l:"200 SMS daily",exp:"End of day"},
+    {n:"Unlimited SMS",p:20,l:"Unlimited SMS daily",exp:"End of day"}
+  ],
+  Weekly:[
+    {n:"100 SMS",p:20,l:"100 SMS weekly",exp:"7 days"},
+    {n:"1000 SMS",p:30,l:"1000 SMS weekly",exp:"7 days"},
+    {n:"Unlimited SMS",p:50,l:"Unlimited SMS weekly",exp:"7 days"}
+  ],
+  Monthly:[
+    {n:"1500 SMS",p:100,l:"1500 SMS monthly",exp:"30 days"},
+    {n:"3500 SMS",p:200,l:"3500 SMS monthly",exp:"30 days"}
+  ]
+};
 
 function $(i){return document.getElementById(i)}
 function esc(x){return String(x).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
@@ -430,6 +457,15 @@ function stamp(){return new Date().toLocaleTimeString([],{hour:"2-digit",minute:
 function today(){return new Date().toLocaleDateString([],{month:"short",day:"numeric"})}
 function save(k,v){try{localStorage.setItem(k,typeof v=="string"?v:JSON.stringify(v))}catch(e){}}
 function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function showBanner(msg,kind){
+  var old=document.querySelector(".top-banner");if(old)old.remove();
+  var b=document.createElement("div");
+  b.className="top-banner";
+  b.style.cssText="position:fixed;top:calc(20px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:"+(kind=="ok"?"#10B981":"#EF4444")+";color:#0E1412;padding:12px 20px;border-radius:12px;font-weight:700;font-size:14px;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:90%;text-align:center";
+  b.textContent=msg;
+  document.body.appendChild(b);
+  setTimeout(function(){b.style.transition="opacity .4s";b.style.opacity="0";setTimeout(function(){b.remove()},400)},3000);
+}
 
 var PAGES=["auth","setup","fuliza","home","sendmoney","airtime","bundles","smsbundle","confirm","till","record","history","stats","you","settings","stub"];
 function show(n){
@@ -489,6 +525,7 @@ async function pinPress(v){
         SAVED.pin=h;save("ck_acct",SAVED);
         PIN="";updatePinDots();hideLock();
         save("ck_setup_done","true");
+        showBanner("PIN set successfully.",'ok');
         show("home");drawHome();return;
       }
       var h=await sha("pin:"+PIN);
@@ -545,6 +582,7 @@ async function signUp(){
   ACC=SAVED;AUTH=true;
   save("ck_logged_in","true");save("ck_setup_done","false");
   $("lockScreen").style.display="none";
+  showBanner("Welcome "+n.split(" ")[0]+"! Account created.",'ok');
   show("setup");drawSetup();
 }
 async function logIn(){
@@ -556,8 +594,9 @@ async function logIn(){
   ACC=SAVED;AUTH=true;
   save("ck_logged_in","true");
   var sd=load("ck_setup_done",false);
-  if(!SAVED.pin){go("setup");return}
-  if(!sd){show("setup");drawSetup();return}
+  if(!SAVED.pin){showBanner("Login successful. Welcome back "+surname(ACC.name)+"!",'ok');go("setup");return}
+  if(!sd){showBanner("Login successful. Welcome back "+surname(ACC.name)+"!",'ok');show("setup");drawSetup();return}
+  showBanner("Login successful. Welcome back "+surname(ACC.name)+"!",'ok');
   showLock();
 }
 function logOut(){
@@ -567,7 +606,8 @@ function logOut(){
   show("auth");drawAuth();
 }
 function confirmLogout(){askC("Log out?","You will need your password to log in again.","Log out",logOut)}
-  /* ========== SETUP ========== */
+
+/* ========== SETUP ========== */
 async function finishSetup(){
   if(!SETUPOK)return;
   save("ck_setup_done","true");
@@ -601,6 +641,7 @@ function saveFulizaLimit(){
   var v=parseInt($("fulizaLimit").value.replace(/\D/g,""))||0;
   if(v<1){alert("Enter a valid amount");return}
   FULIZA_LIMIT=v;save("ck_fuliza_limit",v);
+  showBanner("Fuliza limit saved.",'ok');
   if(!SAVED.pin){showCreatePin("create")}else{show("home");drawHome()}
 }
 function skipFuliza(){if(!SAVED.pin){showCreatePin("create")}else{show("home");drawHome()}}
@@ -620,11 +661,12 @@ function drawHome(){
   $("hAv").textContent=ACC.initials?ACC.initials.toUpperCase():"CK";
   $("hGreet").textContent=g.t;
   $("hName").textContent=surname(ACC.name)+" "+g.em;
-  var hideAll=(HID.air&&HID.com);
-  $("mpAmt").textContent=hideAll?"Ksh ****":"Ksh "+(com||0).toFixed(2);
-  $("airAmt").textContent=hideAll?"Ksh ****":"Ksh "+(air||0).toFixed(2);
-  $("mpEye").textContent=hideAll?"👁":"🙈";
-  $("airEye").textContent=hideAll?"👁":"🙈";
+  var showAir=!HID.air;
+  var showCom=!HID.com;
+  $("mpAmt").textContent=showCom?("Ksh "+(com||0).toFixed(2)):"Ksh ****";
+  $("airAmt").textContent=showAir?("Ksh "+(air||0).toFixed(2)):"Ksh ****";
+  $("mpEye").textContent=showCom?"🙈":"👁";
+  $("airEye").textContent=showAir?"🙈":"👁";
   $("airSync").textContent=AIRKNOWN?"Last checked":"Tap to check balance";
   $("mpFul").textContent=FULIZA_HIDDEN?"👁 Fuliza hidden":("Fuliza: Ksh "+(Math.max(0,FULIZA_LIMIT-FULIZA)).toFixed(2)+" of Ksh "+FULIZA_LIMIT);
   $("mpSim").textContent=SIMMODE+" ▾";
@@ -632,8 +674,7 @@ function drawHome(){
   drawFreq();
 }
 function toggleBal(k){
-  var newState=HID[k]?0:1;
-  HID.air=newState;HID.com=newState;HID.tok=newState;
+  HID[k]=HID[k]?0:1;
   save("ck_hid",HID);
   drawHome();
 }
@@ -643,7 +684,6 @@ function pickSim(k){
   $("cfp").innerHTML='<div style="margin-top:10px">'+
     '<button class="offer" style="'+(cur=="SIM 1"?"border-color:var(--brand)":"")+'" onclick="setSim(\'SIM 1\')">SIM 1</button>'+
     '<button class="offer" style="'+(cur=="SIM 2"?"border-color:var(--brand)":"")+'" onclick="setSim(\'SIM 2\')">SIM 2</button>'+
-    '<button class="offer" style="'+(cur=="Both"?"border-color:var(--brand)":"")+'" onclick="setSim(\'Both\')">Both (alternate)</button>'+
   '</div>';
   $("cfy").style.display="none";
   $("cf").classList.add("show");
@@ -653,6 +693,7 @@ function setSim(s){
   SIMMODE=s;save("ck_simmode",SIMMODE);
   $("cfy").style.display="block";
   $("cf").classList.remove("show");
+  showBanner("Now using "+s,'ok');
   drawHome();
 }
 function toggleFreq(){var w=$("freqWrap");var v=w.style.display=="none";w.style.display=v?"block":"none";$("freqTog").textContent=v?"▼":"▲"}
@@ -661,7 +702,7 @@ function drawFreq(){
   var defaults={
     send:[{k:"p2p",ico:"📤",n:"Send P2P"},{k:"till2",ico:"📲",n:"Send Till"}],
     pay:[{k:"pochi",ico:"📱",n:"Pochi"},{k:"buygoods",ico:"🏪",n:"Till"},{k:"paybill",ico:"🛒",n:"Paybill"}],
-    bundles:[{k:"data",ico:"📶",n:"Buy Data"},{k:"sms",ico:"💬",n:"Buy SMS"}]
+    bundles:[{k:"sms",ico:"💬",n:"Buy SMS"},{k:"data",ico:"📶",n:"Buy Data"}]
   };
   var sorted=(defaults[FREQ_TYPE]||[]).slice();
   sorted.sort(function(a,b){return(usage[b.k]||0)-(usage[a.k]||0)});
@@ -672,10 +713,55 @@ function drawFreq(){
 function setFreq(t,el){FREQ_TYPE=t;document.querySelectorAll("#s-home .freq-tabs button").forEach(function(b){b.classList.remove("active")});el.classList.add("active");drawFreq()}
 function runFreq(k){
   var usage=load("ck_usage",{});usage[k]=(usage[k]||0)+1;save("ck_usage",usage);
-  if(k=="data"||k=="sms"){go("bundles");return}
+  if(k=="sms"){
+    $("cft").textContent="Choose period";
+    $("cfp").innerHTML='<div style="margin-top:10px">'+
+      '<button class="offer" onclick="startSms(\'Daily\')"><div><strong>Daily</strong><span>End of day</span></div><strong>›</strong></button>'+
+      '<button class="offer" onclick="startSms(\'Weekly\')"><div><strong>Weekly</strong><span>7 days</span></div><strong>›</strong></button>'+
+      '<button class="offer" onclick="startSms(\'Monthly\')"><div><strong>Monthly</strong><span>30 days</span></div><strong>›</strong></button>'+
+    '</div>';
+    $("cfy").style.display="none";
+    $("cf").classList.add("show");
+    CFN=null;CFNO=function(){$("cfy").style.display="block"};
+    return;
+  }
+  if(k=="data"){
+    askC("Record Data shortcut","Data bundles change often. Record it once with *544# and use it forever.","Record now",function(){go("record")});
+    return;
+  }
   SM.type=k;go("sendmoney");
 }
+function startSms(period){
+  CFNO=null;
+  $("cf").classList.remove("show");
+  $("cfy").style.display="block";
+  SMS_PERIOD=period;
+  SMS_SELECTED=null;
+  go("smsbundle");
+  setTimeout(function(){
+    document.querySelectorAll("#smsTabs button").forEach(function(b){
+      b.classList.toggle("active",b.textContent==period);
+    });
+    drawSmsBundle();
+  },100);
+}
 function quickAction(t){var usage=load("ck_usage",{});usage[t]=(usage[t]||0)+1;save("ck_usage",usage);SM.type=t;go("sendmoney")}
+function branchSendMoney(){
+  $("cft").textContent="Send Money";
+  $("cfp").innerHTML='<div style="margin-top:10px">'+
+    '<button class="offer" onclick="pickSendType(\'p2p\')"><div><strong>📤 Send P2P</strong><span>Any network or Pochi</span></div><strong>›</strong></button>'+
+    '<button class="offer" onclick="pickSendType(\'till2\')"><div><strong>📲 Send from Till</strong><span>*234*...</span></div><strong>›</strong></button>'+
+  '</div>';
+  $("cfy").style.display="none";
+  $("cf").classList.add("show");
+  CFN=null;CFNO=function(){$("cfy").style.display="block"};
+}
+function pickSendType(t){
+  CFNO=null;
+  $("cf").classList.remove("show");
+  $("cfy").style.display="block";
+  SM.type=t;go("sendmoney");
+}
 
 /* ========== AIRTIME ========== */
 function topupAirtime(){
@@ -701,8 +787,13 @@ async function runAirtime(pay){
     var r=await ussd(c,st,simNo());
     busy=false;
     if(r.ok){
-      TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SENT",src:"airtime"});
+      TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"airtime"});
       save("ck_tx",TX);
+      showBanner("Airtime top up sent.",'ok');
+    }else{
+      TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"FAILED",src:"airtime",why:r.text});
+      save("ck_tx",TX);
+      showBanner("Failed: "+r.text,'bad');
     }
     ovClose();
   }else{
@@ -710,9 +801,8 @@ async function runAirtime(pay){
     TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"airtime"});
     save("ck_tx",TX);
   }
-}
-
-/* ========== SEND MONEY ========== */
+  }
+  /* ========== SEND MONEY ========== */
 var SM_TYPES=[
   ["p2p","Send Money Any Network","*334# → Send Money → Any Network"],
   ["pochi","Pochi la Biashara","*334# → Send Money → Pochi"],
@@ -803,14 +893,34 @@ async function executeSendMoney(){
   if(NATIVE){
     var r=await ussd(c,st,simNo());
     busy=false;
-    if(r.ok){SM.log.unshift({type:t,to:to,amt:am,t:stamp()});save("ck_smlog",SM.log);drawSendMoney();ovClose()}
-    else{ovClose();alert("Failed: "+r.text)}
+    if(r.ok){
+      SM.log.unshift({type:t,to:to,amt:am,t:stamp()});
+      save("ck_smlog",SM.log);
+      TX.unshift({n:label(t),num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:t});
+      save("ck_tx",TX);
+      showBanner("Sent successfully.",'ok');
+      drawSendMoney();
+    }else{
+      TX.unshift({n:label(t),num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"FAILED",src:t,why:r.text});
+      save("ck_tx",TX);
+      showBanner("Failed: "+r.text,'bad');
+    }
+    ovClose();
   }else{
     await step("Dialing...",c);await wait(400);ovClose();busy=false;
-    SM.log.unshift({type:t,to:to,amt:am,t:stamp()});save("ck_smlog",SM.log);drawSendMoney();
+    SM.log.unshift({type:t,to:to,amt:am,t:stamp()});
+    save("ck_smlog",SM.log);
+    TX.unshift({n:label(t),num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:t});
+    save("ck_tx",TX);
+    showBanner("Sent successfully.",'ok');
+    drawSendMoney();
   }
-  }
-  /* ========== BUNDLES ========== */
+}
+function label(t){
+  return {p2p:"Send P2P",pochi:"Pochi",paybill:"Paybill",buygoods:"Buy Goods",till2:"Send Till"}[t]||t;
+}
+
+/* ========== BUNDLES ========== */
 function drawBundles(){}
 function chooseBundle(t){
   if(t=="data"){
@@ -854,26 +964,47 @@ async function runConfirm(pay){
   var c=CONFIRM_ACTION;
   if(!c)return;
   if(!needPermissions())return;
-  var steps=[];
   var code="*544#";
+  var steps=[];
   if(pay=="mpesa"){
-    steps=[{t:"find",k:"buy bundles|bundles"},{t:"find",k:c.period.toLowerCase()},{t:"find",k:c.name.toLowerCase()},{t:"number",v:c.recipient},{t:"find",k:"mpesa"},{t:"stop"}];
+    steps=[
+      {t:"find",k:"buy bundles|buy bundle|bundles"},
+      {t:"find",k:"sms"},
+      {t:"find",k:c.period.toLowerCase()},
+      {t:"find",k:c.name.toLowerCase()},
+      {t:"number",v:c.recipient},
+      {t:"find",k:"mpesa|m-pesa"},
+      {t:"stop"}
+    ];
   }else{
-    steps=[{t:"find",k:"buy bundles|bundles"},{t:"find",k:c.period.toLowerCase()},{t:"find",k:c.name.toLowerCase()},{t:"number",v:c.recipient},{t:"find",k:"airtime"},{t:"stop"}];
+    steps=[
+      {t:"find",k:"buy bundles|buy bundle|bundles"},
+      {t:"find",k:"sms"},
+      {t:"find",k:c.period.toLowerCase()},
+      {t:"find",k:c.name.toLowerCase()},
+      {t:"number",v:c.recipient},
+      {t:"find",k:"airtime"},
+      {t:"stop"}
+    ];
   }
   busy=true;openOv();
   if(NATIVE){
     var r=await ussd(code,steps,simNo());
     busy=false;
     if(r.ok){
-      TX.unshift({n:c.name,num:c.recipient,p:c.amount,t:stamp(),d:0,ts:Date.now(),st:"SENT",src:"bundle"});
+      TX.unshift({n:"SMS "+c.name,num:c.recipient,p:c.amount,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"sms"});
       save("ck_tx",TX);
+      showBanner("SMS bundle sent.",'ok');
       show("home");drawHome();
+    }else{
+      TX.unshift({n:"SMS "+c.name,num:c.recipient,p:c.amount,t:stamp(),d:0,ts:Date.now(),st:"FAILED",src:"sms",why:r.text});
+      save("ck_tx",TX);
+      showBanner("Failed: "+r.text,'bad');
     }
     ovClose();
   }else{
     await step("Dialing...",code);await wait(600);ovClose();busy=false;
-    TX.unshift({n:c.name,num:c.recipient,p:c.amount,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"bundle"});
+    TX.unshift({n:"SMS "+c.name,num:c.recipient,p:c.amount,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"sms"});
     save("ck_tx",TX);
     show("home");drawHome();
   }
@@ -904,7 +1035,14 @@ async function runTill(){
       log.unshift({to:to,amt:am,t:stamp()});
       save("ck_till",log.slice(0,50));
       $("tillPin").value="";
+      TX.unshift({n:"Send Till",num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"till2"});
+      save("ck_tx",TX);
+      showBanner("Till transfer sent.",'ok');
       drawTill();
+    }else{
+      TX.unshift({n:"Send Till",num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"FAILED",src:"till2",why:r.text});
+      save("ck_tx",TX);
+      showBanner("Failed: "+r.text,'bad');
     }
     ovClose();
   }else{
@@ -921,18 +1059,22 @@ function drawRecord(){
 }
 function startRecording(){
   var name=$("recName").value.trim();
+  var base=$("recBase").value.trim();
   if(!name){alert("Enter a function name");return}
+  if(!base){alert("Enter the base USSD code");return}
   RECORDING=true;REC_STEPS=[];
+  REC_BASE=base;
   drawRecord();
-  if(NATIVE){Android.ussd("rec_"+Date.now(),"*544#","[]",simNo(),120)}
+  if(NATIVE){Android.ussd("rec_"+Date.now(),base,"[]",simNo(),120)}
 }
 function stopRecording(){
   RECORDING=false;
   var name=$("recName").value.trim();
-  CUSTOM.push({name:name,cat:REC_CAT,steps:REC_STEPS});
+  CUSTOM.push({name:name,cat:REC_CAT,base:REC_BASE,steps:REC_STEPS});
   save("ck_custom",CUSTOM);
-  $("recName").value="";
+  $("recName").value="";$("recBase").value="";
   drawRecord();
+  showBanner("Function saved: "+name,'ok');
   show("home");drawHome();
   }
   /* ========== HISTORY ========== */
@@ -946,10 +1088,36 @@ function setHistFilter(f,el){HIST_FILTER=f;document.querySelectorAll("#histFilte
 
 /* ========== STATS ========== */
 function drawStats(){
+  $("statMp").textContent=(com||0).toFixed(2);
+  $("statAir").textContent=(air||0).toFixed(2);
+  $("statFul").textContent=Math.max(0,FULIZA_LIMIT-FULIZA).toFixed(2);
   $("stTotal").textContent=CUSTOM.length;
   $("stRuns").textContent=TX.length;
   $("stOk").textContent=TX.filter(function(t){return t.st=="SUCCESS"}).length;
   $("stFail").textContent=TX.filter(function(t){return t.st=="FAILED"}).length;
+  var groups={};
+  TX.forEach(function(t){
+    var k=t.src||"other";
+    groups[k]=(groups[k]||0)+1;
+  });
+  var keys=Object.keys(groups);
+  var total=keys.reduce(function(a,k){return a+groups[k]},0);
+  if(!total){
+    $("pieChart").style.background="conic-gradient(#26332B 0 100%)";
+    $("pieLegend").innerHTML='<small style="color:var(--mute)">No transactions yet</small>';
+    return;
+  }
+  var colors=["#10B981","#FBBF24","#3B82F6","#EF4444","#8B5CF6","#EC4899"];
+  var stops=[],legend="",acc=0;
+  keys.forEach(function(k,i){
+    var pct=(groups[k]/total)*100;
+    var c=colors[i%colors.length];
+    stops.push(c+" "+acc+"% "+(acc+pct)+"%");
+    legend+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="width:10px;height:10px;border-radius:50%;background:'+c+'"></span>'+k+' ('+groups[k]+')</div>';
+    acc+=pct;
+  });
+  $("pieChart").style.background="conic-gradient("+stops.join(",")+")";
+  $("pieLegend").innerHTML=legend;
 }
 
 /* ========== YOU ========== */
@@ -986,7 +1154,7 @@ function drawSet(){
   var s=setupState();
   $("setbody").innerHTML=
     '<div class="card"><b>SIM routing</b><label>Dial USSD with</label>'+
-      '<div class="sm">'+["SIM 1","SIM 2","Both"].map(function(x){return '<button class="'+(SIMMODE==x?'active':'')+'" onclick="SIMMODE=\''+x+'\';save(\'ck_simmode\',SIMMODE);drawSet()">'+x+'</button>'}).join("")+'</div>'+
+      '<div class="sm">'+["SIM 1","SIM 2"].map(function(x){return '<button class="'+(SIMMODE==x?'active':'')+'" onclick="SIMMODE=\''+x+'\';save(\'ck_simmode\',SIMMODE);drawSet()">'+x+'</button>'}).join("")+'</div>'+
     '</div>'+
     '<div class="card"><b>Transaction security</b><label>Ask for PIN</label>'+
       '<div class="sm">'+
@@ -1004,7 +1172,7 @@ function drawSet(){
     '</div>'+
     '<div class="card"><b>Fuliza limit</b><label>Current limit (Ksh)</label>'+
       '<input id="fulizaSet" type="tel" value="'+FULIZA_LIMIT+'">'+
-      '<button class="go" onclick="FULIZA_LIMIT=parseInt($(\'fulizaSet\').value)||0;save(\'ck_fuliza_limit\',FULIZA_LIMIT);drawHome()">Save</button>'+
+      '<button class="go" onclick="FULIZA_LIMIT=parseInt($(\'fulizaSet\').value)||0;save(\'ck_fuliza_limit\',FULIZA_LIMIT);drawHome();showBanner(\'Fuliza limit saved.\',\'ok\')">Save</button>'+
     '</div>'+
     '<div class="card"><b>Setup status</b><div style="margin:8px 0;line-height:1.8">'+
       (s.perm?'✓':'○')+' Permissions<br>'+
