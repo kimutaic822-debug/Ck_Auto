@@ -30,7 +30,6 @@ textarea{min-height:100px}
 .sm button.active{background:var(--brand);color:#0E1412;border-color:var(--brand);font-weight:700}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .sw button{width:46px;height:26px;border-radius:13px;border:0;background:var(--line);position:relative;cursor:pointer}
 .sw button::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
 .sw button.on{background:var(--brand)}.sw button.on::after{left:23px}
@@ -87,9 +86,6 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 .ussd .in{border-bottom:2px solid #4a8cff;padding:6px 0;min-height:28px;font:16px Consolas,monospace}
 .ussd .st,.ussd .nt{color:#9aa;font-size:12px;margin-top:8px}
 .ussd .done{width:100%;margin-top:12px;padding:11px;border:0;border-radius:10px;background:var(--brand);color:#0E1412;font:inherit;font-weight:700;display:none}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center;z-index:10}.modal.show{display:flex}
-.sheet{background:var(--card);width:100%;max-width:520px;border-radius:24px 24px 0 0;padding:22px;max-height:85vh;overflow-y:auto;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
-.sheet h3{margin:0 0 14px;font-size:18px}
 .note{font-size:12px;color:var(--mute);margin-top:10px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;flex:none}
 .dot.on{background:#22C55E}.dot.off{background:#EF4444}
@@ -109,17 +105,9 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 .lockScreen .who{text-align:center;color:var(--mute);font-size:14px;margin-bottom:20px}
 .lockScreen .forgot{text-align:center;margin-top:20px}
 .lockScreen .forgot button{background:none;border:0;color:var(--brand);font:inherit;cursor:pointer}
-.rec-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
-.rec-item:last-child{border-bottom:0}
-.rec-ico{width:40px;height:40px;border-radius:12px;background:var(--brand2);display:flex;align-items:center;justify-content:center;font-size:18px}
-.rec-body{flex:1}
-.rec-body b{display:block;font-size:14px}
-.rec-body small{color:var(--mute);font-size:12px}
-.rec-amt{text-align:right}
-.rec-amt b{display:block;font-size:14px}
 .toast{display:none!important}
 .sync-ts{font-size:10px;color:var(--mute);margin-top:4px}
-.pill{display:inline-block;padding:4px 10px;background:var(--brand2);color:var(--brand);border-radius:99px;font-size:11px;font-weight:700;margin-right:6px}
+.err{color:#c0392b;font-size:13px;min-height:18px;margin:6px 0 0}
 </style>
 </head>
 <body>
@@ -180,17 +168,16 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
   </div>
   <button class="chip" style="width:100%;text-align:center;padding:12px" onclick="skipFuliza()">Skip for now</button>
 </section>
-
 <section id="s-home" class="act">
   <div class="greeting">
     <div class="avatar" id="hAv" onclick="go('you')">CK</div>
     <div class="greet-text">
       <small id="hGreet">Good morning</small>
-      <b id="hName">Kimutai 👋</b>
+      <b id="hName">--</b>
     </div>
     <div class="hdr-icons">
-      <button onclick="go('alerts')">🔔</button>
-      <button onclick="go('search')">🔍</button>
+      <button onclick="go('history')">🔔</button>
+      <button onclick="go('history')">🔍</button>
     </div>
   </div>
 
@@ -200,38 +187,37 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
         <button class="simchip" id="mpSim" onclick="pickSim('mpesa')">SIM 1 ▾</button>
         <button class="eye" onclick="toggleBal('mpesa')" id="mpEye">👁</button>
       </div>
-      <div class="amt" id="mpAmt">Ksh --</div>
+      <div class="amt" id="mpAmt">Ksh ****</div>
       <div class="sub" id="mpFul">👁 Fuliza hidden</div>
-      <button class="viewbtn" onclick="go('statements')">View Statements</button>
+      <button class="viewbtn" onclick="go('history')">View Statements</button>
     </div>
     <div class="balcard airtime">
       <div class="top">
         <button class="simchip" id="airSim" onclick="pickSim('airtime')">SIM 1 ▾</button>
         <button class="eye" onclick="toggleBal('airtime')" id="airEye">👁</button>
       </div>
-      <div class="amt" id="airAmt">Ksh --</div>
+      <div class="amt" id="airAmt">Ksh ****</div>
       <div class="sub sync-ts" id="airSync">Tap to check balance</div>
       <button class="viewbtn" onclick="topupAirtime()">Top Up Airtime</button>
     </div>
   </div>
 
-  <div class="sec-hdr"><h2>Quick Actions</h2><button class="chip" onclick="go('allactions')">View all</button></div>
+  <div class="sec-hdr"><h2>Quick Actions</h2><button class="chip" onclick="show('stub')">View all</button></div>
   <div class="qa">
     <button class="qa-btn" onclick="go('sendmoney')"><div class="qa-ico">💸</div>Send Money</button>
-    <button class="qa-btn" onclick="go('lipa')"><div class="qa-ico">🛒</div>Lipa na M-PESA</button>
-    <button class="qa-btn" onclick="go('withdraw')"><div class="qa-ico">🏧</div>Withdraw</button>
-    <button class="qa-btn" onclick="go('pochi')"><div class="qa-ico">📱</div>Pochi Wallet</button>
-    <button class="qa-btn" onclick="go('bundles')"><div class="qa-ico">📦</div>Buy Bundles</button>
+    <button class="qa-btn" onclick="quickAction('p2p')"><div class="qa-ico">📤</div>P2P</button>
+    <button class="qa-btn" onclick="quickAction('pochi')"><div class="qa-ico">📱</div>Pochi</button>
+    <button class="qa-btn" onclick="quickAction('paybill')"><div class="qa-ico">🛒</div>Paybill</button>
+    <button class="qa-btn" onclick="quickAction('buygoods')"><div class="qa-ico">🏪</div>Buy Goods</button>
+    <button class="qa-btn" onclick="quickAction('till2')"><div class="qa-ico">📲</div>Send Till</button>
     <button class="qa-btn" onclick="topupAirtime()"><div class="qa-ico">☎️</div>Airtime</button>
-    <button class="qa-btn" onclick="go('till')"><div class="qa-ico">🏪</div>Send from Till</button>
     <button class="qa-btn" onclick="go('record')"><div class="qa-ico">➕</div>Add Function</button>
   </div>
 
   <div class="sec-hdr" style="margin-top:20px"><h2>Frequents</h2><button class="chip" onclick="toggleFreq()" id="freqTog">▼</button></div>
   <div id="freqWrap">
     <div class="freq-tabs">
-      <button class="active" onclick="setFreq('apps',this)">Apps</button>
-      <button onclick="setFreq('send',this)">Send</button>
+      <button class="active" onclick="setFreq('send',this)">Send</button>
       <button onclick="setFreq('pay',this)">Pay</button>
       <button onclick="setFreq('bundles',this)">Bundles</button>
     </div>
@@ -251,6 +237,25 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
   <div id="smForm"></div>
   <h2>Recent transfers</h2>
   <div class="list" id="smLog"></div>
+</section>
+
+<section id="s-airtime">
+  <h2 style="margin-top:8px">Buy Airtime</h2>
+  <label>For number</label>
+  <input id="airTo" type="tel" maxlength="13" placeholder="07XX XXX XXX">
+  <label>Amount (Ksh)</label>
+  <input id="airAmt" type="tel" inputmode="numeric" placeholder="e.g. 100">
+  <div class="sm">
+    <button onclick="$('airAmt').value=50">50</button>
+    <button onclick="$('airAmt').value=100">100</button>
+    <button onclick="$('airAmt').value=200">200</button>
+    <button onclick="$('airAmt').value=500">500</button>
+  </div>
+  <h2>Pay with</h2>
+  <div class="card" style="padding:0;overflow:hidden">
+    <button class="offer" onclick="runAirtime('mpesa')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)"><div><strong>💳 M-Pesa</strong><span>From wallet · PIN</span></div><strong>›</strong></button>
+    <button class="offer" onclick="runAirtime('airtime')" style="border-radius:0;border:0"><div><strong>☎️ Airtime</strong><span>Send airtime from SIM balance</span></div><strong>›</strong></button>
+  </div>
 </section>
 
 <section id="s-bundles">
@@ -344,21 +349,13 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 
 <section id="s-settings">
   <h2 style="margin-top:8px">Settings</h2>
-  <div class="card" id="setup" style="display:none">
-    <b>Phone setup</b>
-    <div id="sst" style="margin:8px 0"></div>
-    <div class="g2" style="margin-top:10px">
-      <button class="go" style="margin:0;font-size:14px" onclick="Android.askPermissions()">Allow permissions</button>
-      <button class="go" style="margin:0;font-size:14px;background:#7a2fb0" onclick="Android.openAccessibility()">Turn on USSD</button>
-    </div>
-  </div>
   <div id="setbody"></div>
   <button class="go" style="background:#c0392b" onclick="confirmLogout()">Log out</button>
 </section>
 
 <section id="s-stub">
-  <h2 style="margin-top:8px" id="stt"></h2>
-  <div class="card">Coming soon.</div>
+  <h2 style="margin-top:8px">Coming soon</h2>
+  <div class="card">This feature is being built.</div>
 </section>
 
 <nav role="tablist">
@@ -412,28 +409,17 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 <script>
   window.onerror=function(m,s,l,c,e){document.body.insertAdjacentHTML("afterbegin",'<div style="position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:14px;z-index:99999;font-family:monospace;font-size:12px">LINE '+l+': '+m+'</div>');return true};
 
-var APPNAME="CK Shortcut",OWN="",NATIVE=!!window.Android;
+var OWN="",NATIVE=!!window.Android;
 var SAVED=null,ACC=null,AUTH=false,AUTHTAB="signup",SETUPOK=false,OWNERMODE=false;
 var on=true,busy=false,air=0,com=0,AIRKNOWN=false,SIMMODE="SIM 1",SMSIM="SIM 1",SIMREAD="Both";
 var CFN=null,CFNO=null,NAVH=[],VIS=0,SHOWU=0;
 var HID={air:1,com:1,tok:1},SUBEND=0,TOK=0,FULIZA=0,FULIZA_LIMIT=0,FULIZA_HIDDEN=true;
 var AUTOMATION_MODE="every",VIBE_HANDOFF=300,VIBE_EMER=15000;
-var PIN="",PIN_CONFIRM="",PINDOTS=[],PINLEN=4,FAILS=0,LOCKED=true;
-var REC_CAT="Bundles",RECORDING=false,REC_STEPS=[],REC_TX=[];
+var PIN="",PIN_CONFIRM="",PINLEN=4,FAILS=0,LOCKED=true,PIN_PHASE="unlock";
+var REC_CAT="Bundles",RECORDING=false,REC_STEPS=[];
 var TX=[],SM={type:"p2p",log:[]},CUSTOM=[];
 var SMS_PERIOD="Daily",SMS_SELECTED=null,CONFIRM_ACTION=null;
-var FREQ_TYPE="apps",HIST_FILTER="all",OO="",SAVED_ACC=null;
-var OFFERS=[
- {m:"Sh20=1GB,1hr",p:20,sp:19,auto:0},
- {m:"Sh20=250MB,24hr",p:20,sp:20,auto:1},
- {m:"Sh50=750MB+50SMS,24hr",p:50,sp:50,auto:0},
- {m:"Sh99=1.5GB,24hr",p:99,sp:99,auto:0}
-];
-var SMS_BUNDLES={
- Daily:[{n:"20 SMS",p:5,l:"20 SMS daily",exp:"End of day"},{n:"200 SMS",p:10,l:"200 SMS daily",exp:"End of day"},{n:"Unlimited SMS",p:20,l:"Unlimited SMS daily",exp:"End of day"}],
- Weekly:[{n:"100 SMS",p:20,l:"100 SMS weekly",exp:"7 days"},{n:"1000 SMS",p:30,l:"1000 SMS weekly",exp:"7 days"},{n:"Unlimited SMS",p:50,l:"Unlimited SMS weekly",exp:"7 days"}],
- Monthly:[{n:"1500 SMS",p:100,l:"1500 SMS monthly",exp:"30 days"},{n:"3500 SMS",p:200,l:"3500 SMS monthly",exp:"30 days"}]
-};
+var FREQ_TYPE="send",HIST_FILTER="all",OO="";
 
 function $(i){return document.getElementById(i)}
 function esc(x){return String(x).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
@@ -445,11 +431,12 @@ function today(){return new Date().toLocaleDateString([],{month:"short",day:"num
 function save(k,v){try{localStorage.setItem(k,typeof v=="string"?v:JSON.stringify(v))}catch(e){}}
 function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 
-var PAGES=["auth","setup","fuliza","home","sendmoney","bundles","smsbundle","confirm","till","record","history","stats","you","settings","stub","allactions","statements","alerts","search","lipa","withdraw","pochi"];
+var PAGES=["auth","setup","fuliza","home","sendmoney","airtime","bundles","smsbundle","confirm","till","record","history","stats","you","settings","stub"];
 function show(n){
   PAGES.forEach(function(x){var el=$("s-"+x);if(el)el.classList.toggle("act",x==n)});
   var tabs=["home","record","history","stats","you"];
   tabs.forEach(function(x){var b=$("n-"+x);if(b)b.setAttribute("aria-selected",x==n)});
+  document.body.setAttribute("data-pg",n);
   var fns={home:drawHome,history:drawHistory,stats:drawStats,you:drawYou,settings:drawSet,sendmoney:drawSendMoney,bundles:drawBundles,smsbundle:drawSmsBundle,record:drawRecord};
   if(fns[n])fns[n]();
   window.scrollTo(0,0);
@@ -460,33 +447,59 @@ function back(){var p=NAVH.pop();show(p||"home")}
 function nativeBack(){if($("cf").classList.contains("show")){cfx(0);return true}if($("dr").classList.contains("show")){dr(0);return true}if(document.body.getAttribute("data-pg")!="home"){back();return true}return false}
 function dr(v){$("dr").classList.toggle("show",!!v)}
 
-/* ========== LOCK SCREEN ========== */
+/* ========== LOCK ========== */
 function showLock(){
   $("lockScreen").style.display="flex";
-  LOCKED=true;PIN="";updatePinDots();
-  try{Fingerprint.check({title:"Unlock CK Shortcut",subtitle:"Place your finger"})}catch(e){}
+  LOCKED=true;PIN="";PIN_PHASE="unlock";
+  $("lockGreeting").textContent="Welcome back";
+  $("lockWho").textContent="Tap fingerprint or enter PIN";
+  updatePinDots();
+}
+function showCreatePin(phase){
+  $("lockScreen").style.display="flex";
+  LOCKED=true;PIN="";PIN_PHASE=phase;
+  if(phase=="create"){
+    $("lockGreeting").textContent="Create your app PIN";
+    $("lockWho").textContent="Choose 4-6 digits";
+  }else{
+    $("lockGreeting").textContent="Confirm your PIN";
+    $("lockWho").textContent="Enter it again";
+  }
+  updatePinDots();
 }
 function hideLock(){$("lockScreen").style.display="none";LOCKED=false}
 function updatePinDots(){
   var dots=$("pinDots").children;
   for(var i=0;i<dots.length;i++)dots[i].classList.toggle("filled",i<PIN.length);
 }
-function pinPress(v){
+async function pinPress(v){
   if(v=="del"){PIN=PIN.slice(0,-1);updatePinDots();return}
   if(PIN.length>=PINLEN)return;
   PIN+=v;updatePinDots();
   if(PIN.length==PINLEN){
-    setTimeout(function(){
-      if(PIN===SAVED.pin){FAILS=0;PIN="";updatePinDots();hideLock();}
+    setTimeout(async function(){
+      if(PIN_PHASE=="create"){
+        PIN_CONFIRM=PIN;PIN="";updatePinDots();
+        showCreatePin("confirm");return;
+      }
+      if(PIN_PHASE=="confirm"){
+        if(PIN!==PIN_CONFIRM){FAILS++;PIN="";PIN_CONFIRM="";showCreatePin("create");
+          $("lockWho").textContent="PINs didn't match. Try again.";return}
+        var h=await sha("pin:"+PIN);
+        SAVED.pin=h;save("ck_acct",SAVED);
+        PIN="";updatePinDots();hideLock();
+        save("ck_setup_done","true");
+        show("home");drawHome();return;
+      }
+      var h=await sha("pin:"+PIN);
+      if(h===SAVED.pin){FAILS=0;PIN="";updatePinDots();hideLock();}
       else{FAILS++;PIN="";updatePinDots();
-        var msg="Wrong PIN";
-        if(FAILS>=5)msg="Too many tries. Wait 30s";
-        $("lockWho").textContent=msg;
+        $("lockWho").textContent="Wrong PIN"+((FAILS>=3)?" — "+FAILS+" tries":"");
       }
     },150);
   }
 }
-function forgotPin(){askC("Verify identity","Enter your ID number, phone number and year of birth to recover.","Continue",function(){go("recover")})}
+function forgotPin(){askC("Recovery","Enter your ID, phone number and year of birth to reset your PIN.","Continue",function(){go("stub")})}
 
 /* ========== AUTH ========== */
 function aerr(m){var e=$("aue");if(e)e.textContent=m}
@@ -500,21 +513,9 @@ function drawAuth(){
       '<button class="'+(!sl?"active":"")+'" onclick="setAT(\'signup\')">Create account</button>'+
     '</div>'+
     (sl?
-      '<div class="card"><label>Phone or email</label><input id="al" autocomplete="username"><label>Password</label><input id="alp" type="password" autocomplete="current-password"><p class="err" id="aue"></p><button class="go" onclick="logIn()">Log in</button></div>'
+      '<div class="card"><label>Phone or email</label><input id="al"><label>Password</label><input id="alp" type="password"><p class="err" id="aue"></p><button class="go" onclick="logIn()">Log in</button></div>'
       :
-      '<div class="card"><label>Full name</label><input id="an" autocomplete="name"><label>Business name (optional)</label><input id="ab" placeholder="e.g. My Business"><label>Phone number</label><input id="ap0" type="tel" maxlength="13"><label>Email</label><input id="ae" type="email"><label>ID number</label><input id="aid" type="tel" maxlength="12"><label>Year of birth</label><input id="adob" type="tel" maxlength="4"><label>Password (8+ chars)</label><input id="ap" type="password"><label>Confirm password</label><input id="ac" type="password"><p class="err" id="aue"></p><button class="go" onclick="signUp()">Create account</button></div>');
-  pwEyes();
-}
-function pwEyes(){
-  document.querySelectorAll("#aub input[type=password]").forEach(function(i){
-    if(i.parentNode.classList.contains("pwb"))return;
-    var w=document.createElement("div");w.className="pwb";w.style.position="relative";
-    i.parentNode.insertBefore(w,i);w.appendChild(i);
-    var b=document.createElement("button");b.type="button";
-    b.style.cssText="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--mute);cursor:pointer;font-size:16px";
-    b.textContent="👁";b.onclick=function(){i.type=i.type=="password"?"text":"password";b.textContent=i.type=="password"?"👁":"🙈"};
-    w.appendChild(b);
-  });
+      '<div class="card"><label>Full name</label><input id="an"><label>Business name (optional)</label><input id="ab"><label>Phone number</label><input id="ap0" type="tel" maxlength="13"><label>Email</label><input id="ae" type="email"><label>ID number</label><input id="aid" type="tel" maxlength="12"><label>Year of birth</label><input id="adob" type="tel" maxlength="4"><label>Password (8+ chars)</label><input id="ap" type="password"><label>Confirm password</label><input id="ac" type="password"><p class="err" id="aue"></p><button class="go" onclick="signUp()">Create account</button></div>');
 }
 async function sha(t){
   var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("ck:"+t));
@@ -538,7 +539,8 @@ async function signUp(){
   var ini=((parts[0]||"")[0]+(parts[parts.length-1]||"")[0]).toLowerCase();
   var recKey=(id.slice(-3))+(p.slice(-2))+(dob[2]||"0");
   var recHash=await sha(recKey);
-  SAVED={name:n,biz:biz,phone:p,email:e,initials:ini,pin:null,recHash:recHash,owner:false,since:today()};
+  var pwHash=await sha("pw:"+a);
+  SAVED={name:n,biz:biz,phone:p,email:e,initials:ini,pin:null,pinHash:pwHash,recHash:recHash,owner:false,since:today()};
   save("ck_acct",SAVED);
   ACC=SAVED;AUTH=true;
   save("ck_logged_in","true");save("ck_setup_done","false");
@@ -554,8 +556,7 @@ async function logIn(){
   ACC=SAVED;AUTH=true;
   save("ck_logged_in","true");
   var sd=load("ck_setup_done",false);
-  var hasPin=!!SAVED.pin;
-  if(!hasPin){go("setup");return}
+  if(!SAVED.pin){go("setup");return}
   if(!sd){show("setup");drawSetup();return}
   showLock();
 }
@@ -566,14 +567,13 @@ function logOut(){
   show("auth");drawAuth();
 }
 function confirmLogout(){askC("Log out?","You will need your password to log in again.","Log out",logOut)}
-
-/* ========== SETUP ========== */
+  /* ========== SETUP ========== */
 async function finishSetup(){
   if(!SETUPOK)return;
   save("ck_setup_done","true");
   if(!FULIZA_LIMIT){show("fuliza");return}
-  if(!SAVED.pin){go("createPin");return}
-  show("home");
+  if(!SAVED.pin){showCreatePin("create");return}
+  show("home");drawHome();
 }
 function drawSetup(){
   var s=setupState();
@@ -601,31 +601,16 @@ function saveFulizaLimit(){
   var v=parseInt($("fulizaLimit").value.replace(/\D/g,""))||0;
   if(v<1){alert("Enter a valid amount");return}
   FULIZA_LIMIT=v;save("ck_fuliza_limit",v);
-  if(!SAVED.pin){go("createPin")}else{show("home");drawHome()}
+  if(!SAVED.pin){showCreatePin("create")}else{show("home");drawHome()}
 }
-function skipFuliza(){if(!SAVED.pin){go("createPin")}else{show("home");drawHome()}}
-
-/* ========== PIN SETUP ========== */
-function createPinScreen(){
-  $("s-setup").classList.remove("act");
-  PAGES.forEach(function(x){var el=$("s-"+x);if(el)el.classList.remove("act")});
-  $("lockScreen").style.display="flex";
-  $("lockGreeting").textContent="Create your app PIN";
-  $("lockWho").textContent="Choose 4-6 digits";
-  PIN="";PIN_CONFIRM="";PINLEN=4;updatePinDots();
-}
-function confirmPinScreen(){
-  $("lockGreeting").textContent="Confirm your PIN";
-  $("lockWho").textContent="Enter it again";
-  PIN_CONFIRM=PIN;PIN="";updatePinDots();
-}
+function skipFuliza(){if(!SAVED.pin){showCreatePin("create")}else{show("home");drawHome()}}
 
 /* ========== HOME ========== */
 function greeting(){
   var h=new Date().getHours();
   if(h>=5&&h<12)return{em:"🌅",t:"Good morning"};
   if(h>=12&&h<17)return{em:"☀️",t:"Good afternoon"};
-  if(h>=17&&h<22)return{em:"👋",t:"Good evening"};
+  if(h>=17&&h<22)return{em:"🌆",t:"Good evening"};
   return{em:"🌙",t:"Good night"};
 }
 function surname(n){var p=String(n||"").split(/\s+/);return p[p.length-1]||p[0]||"friend"}
@@ -635,37 +620,99 @@ function drawHome(){
   $("hAv").textContent=ACC.initials?ACC.initials.toUpperCase():"CK";
   $("hGreet").textContent=g.t;
   $("hName").textContent=surname(ACC.name)+" "+g.em;
-  $("mpAmt").textContent=HID.air?"Ksh ****":"Ksh "+(com||0).toFixed(2);
-  $("airAmt").textContent=HID.air?"Ksh ****":"Ksh "+(air||0).toFixed(2);
-  $("airSync").textContent=AIRKNOWN?"Tap to check balance":"Synced recently";
-  $("mpFul").textContent=FULIZA_HIDDEN?"👁 Fuliza hidden":"Fuliza: Ksh "+(FULIZA_LIMIT-FULIZA).toFixed(2)+" available of Ksh "+FULIZA_LIMIT;
+  var hideAll=(HID.air&&HID.com);
+  $("mpAmt").textContent=hideAll?"Ksh ****":"Ksh "+(com||0).toFixed(2);
+  $("airAmt").textContent=hideAll?"Ksh ****":"Ksh "+(air||0).toFixed(2);
+  $("mpEye").textContent=hideAll?"👁":"🙈";
+  $("airEye").textContent=hideAll?"👁":"🙈";
+  $("airSync").textContent=AIRKNOWN?"Last checked":"Tap to check balance";
+  $("mpFul").textContent=FULIZA_HIDDEN?"👁 Fuliza hidden":("Fuliza: Ksh "+(Math.max(0,FULIZA_LIMIT-FULIZA)).toFixed(2)+" of Ksh "+FULIZA_LIMIT);
   $("mpSim").textContent=SIMMODE+" ▾";
   $("airSim").textContent=SIMMODE+" ▾";
   drawFreq();
 }
-function toggleBal(k){HID[k]=!HID[k]?1:0;drawHome()}
-function pickSim(k){askC("Choose SIM","Which SIM should we use?","SIM 1",function(){SIMMODE="SIM 1";save("ck_simmode",SIMMODE);drawHome()},function(){SIMMODE="SIM 2";save("ck_simmode",SIMMODE);drawHome()})}
+function toggleBal(k){
+  var newState=HID[k]?0:1;
+  HID.air=newState;HID.com=newState;HID.tok=newState;
+  save("ck_hid",HID);
+  drawHome();
+}
+function pickSim(k){
+  var cur=SIMMODE;
+  $("cft").textContent="Choose SIM";
+  $("cfp").innerHTML='<div style="margin-top:10px">'+
+    '<button class="offer" style="'+(cur=="SIM 1"?"border-color:var(--brand)":"")+'" onclick="setSim(\'SIM 1\')">SIM 1</button>'+
+    '<button class="offer" style="'+(cur=="SIM 2"?"border-color:var(--brand)":"")+'" onclick="setSim(\'SIM 2\')">SIM 2</button>'+
+    '<button class="offer" style="'+(cur=="Both"?"border-color:var(--brand)":"")+'" onclick="setSim(\'Both\')">Both (alternate)</button>'+
+  '</div>';
+  $("cfy").style.display="none";
+  $("cf").classList.add("show");
+  CFN=null;CFNO=function(){$("cfy").style.display="block"};
+}
+function setSim(s){
+  SIMMODE=s;save("ck_simmode",SIMMODE);
+  $("cfy").style.display="block";
+  $("cf").classList.remove("show");
+  drawHome();
+}
 function toggleFreq(){var w=$("freqWrap");var v=w.style.display=="none";w.style.display=v?"block":"none";$("freqTog").textContent=v?"▼":"▲"}
 function drawFreq(){
-  var data={
-    apps:[{ico:"📶",n:"1GB Data",p:19},{ico:"💬",n:"200 SMS",p:10},{ico:"☎️",n:"Airtime 100",p:100}],
-    send:[{ico:"💸",n:"Send Mum",p:500},{ico:"📱",n:"Pochi",p:200},{ico:"🏪",n:"Till Send",p:100}],
-    pay:[{ico:"🛒",n:"Lipa",p:0},{ico:"💡",n:"KPLC",p:100},{ico:"📺",n:"DSTV",p:400}],
-    bundles:[{ico:"📦",n:"1GB",p:20},{ico:"💬",n:"SMS 200",p:10},{ico:"📶",n:"2GB",p:50}]
+  var usage=load("ck_usage",{});
+  var defaults={
+    send:[{k:"p2p",ico:"📤",n:"Send P2P"},{k:"till2",ico:"📲",n:"Send Till"}],
+    pay:[{k:"pochi",ico:"📱",n:"Pochi"},{k:"buygoods",ico:"🏪",n:"Till"},{k:"paybill",ico:"🛒",n:"Paybill"}],
+    bundles:[{k:"data",ico:"📶",n:"Buy Data"},{k:"sms",ico:"💬",n:"Buy SMS"}]
   };
-  $("freqList").innerHTML=(data[FREQ_TYPE]||[]).map(function(x){
-    return '<div class="freq-item" onclick="runFreq(\''+esc(x.n)+'\')"><div class="ico">'+x.ico+'</div><b>'+x.n+'</b><small>Ksh '+x.p+'</small></div>';
+  var sorted=(defaults[FREQ_TYPE]||[]).slice();
+  sorted.sort(function(a,b){return(usage[b.k]||0)-(usage[a.k]||0)});
+  $("freqList").innerHTML=sorted.map(function(x){
+    return '<div class="freq-item" onclick="runFreq(\''+x.k+'\')"><div class="ico">'+x.ico+'</div><b>'+x.n+'</b><small>'+((usage[x.k]||0)+" uses")+'</small></div>';
   }).join("");
 }
 function setFreq(t,el){FREQ_TYPE=t;document.querySelectorAll("#s-home .freq-tabs button").forEach(function(b){b.classList.remove("active")});el.classList.add("active");drawFreq()}
-function runFreq(n){go("sendmoney")}
+function runFreq(k){
+  var usage=load("ck_usage",{});usage[k]=(usage[k]||0)+1;save("ck_usage",usage);
+  if(k=="data"||k=="sms"){go("bundles");return}
+  SM.type=k;go("sendmoney");
+}
+function quickAction(t){var usage=load("ck_usage",{});usage[t]=(usage[t]||0)+1;save("ck_usage",usage);SM.type=t;go("sendmoney")}
 
 /* ========== AIRTIME ========== */
-async function topupAirtime(){
-  if(NATIVE){try{Android.ussdQuick("topup","*144#",1)}catch(e){}}
-  else{await wait(500);air=Math.random()*200;AIRKNOWN=true;drawHome()}
+function topupAirtime(){
+  if(ACC)$("airTo").value=ACC.phone;
+  show("airtime");
+}
+async function runAirtime(pay){
+  var to=normPn($("airTo").value),am=parseInt($("airAmt").value.replace(/\D/g,""));
+  if(!to||!am){alert("Fill all fields");return}
+  if(!needPermissions())return;
+  var ok=await askYN("Confirm","Buy Ksh "+am+" airtime for "+to+"?","Proceed");
+  if(!ok)return;
+  busy=true;openOv();
+  var c,st;
+  if(pay=="mpesa"){
+    c="*334#";
+    st=[{t:"find",k:"buy airtime|airtime"},{t:"text",v:to},{t:"text",v:String(am)},{t:"stop"}];
+  }else{
+    c="*140*"+am+"*"+to+"#";
+    st=[{t:"stop"}];
   }
-  /* ========== SEND MONEY ========== */
+  if(NATIVE){
+    var r=await ussd(c,st,simNo());
+    busy=false;
+    if(r.ok){
+      TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SENT",src:"airtime"});
+      save("ck_tx",TX);
+    }
+    ovClose();
+  }else{
+    await step("Dialing...",c);await wait(500);ovClose();busy=false;
+    TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"airtime"});
+    save("ck_tx",TX);
+  }
+}
+
+/* ========== SEND MONEY ========== */
 var SM_TYPES=[
   ["p2p","Send Money Any Network","*334# → Send Money → Any Network"],
   ["pochi","Pochi la Biashara","*334# → Send Money → Pochi"],
@@ -706,43 +753,64 @@ async function executeSendMoney(){
   var t=SM.type,c="",st=[],to="",am=0,pin="";
   if(t=="p2p"||t=="pochi"){
     to=normPn($("smPhone").value);am=parseInt($("smAmt").value.replace(/\D/g,""));pin=$("smPin").value;
-    if(!to||!am||!pin)return;
+    if(!to||!am||!pin){alert("Fill all fields");return}
     c="*334#";
-    st=[{t:"find",k:"send money"},{t:"find",k:t=="pochi"?"pochi":"any network"},{t:"text",v:to},{t:"text",v:String(am)},{t:"text",v:pin},{t:"stop"}];
+    st=[
+      {t:"find",k:"send money|send to|transfer"},
+      {t:"find",k:t=="pochi"?"pochi":"any network|other network|send to any"},
+      {t:"text",v:to},
+      {t:"text",v:String(am)},
+      {t:"text",v:pin},
+      {t:"stop"}
+    ];
   }else if(t=="paybill"){
     var bz=$("smBiz").value.replace(/\D/g,""),ac=$("smAcct").value.replace(/\D/g,"");
     am=parseInt($("smAmt").value.replace(/\D/g,""));pin=$("smPin").value;
-    if(!bz||!ac||!am||!pin)return;
+    if(!bz||!ac||!am||!pin){alert("Fill all fields");return}
     c="*334#";
-    st=[{t:"find",k:"lipa na"},{t:"find",k:"pay bill"},{t:"text",v:bz},{t:"text",v:ac},{t:"text",v:String(am)},{t:"text",v:pin},{t:"stop"}];
+    st=[
+      {t:"find",k:"lipa na|lipa"},
+      {t:"find",k:"pay bill|paybill"},
+      {t:"text",v:bz},
+      {t:"text",v:ac},
+      {t:"text",v:String(am)},
+      {t:"text",v:pin},
+      {t:"stop"}
+    ];
   }else if(t=="buygoods"){
     var til=$("smTill").value.replace(/\D/g,"");
     am=parseInt($("smAmt").value.replace(/\D/g,""));pin=$("smPin").value;
-    if(!til||!am||!pin)return;
+    if(!til||!am||!pin){alert("Fill all fields");return}
     c="*334#";
-    st=[{t:"find",k:"lipa na"},{t:"find",k:"buy goods"},{t:"text",v:til},{t:"text",v:String(am)},{t:"text",v:pin},{t:"stop"}];
+    st=[
+      {t:"find",k:"lipa na|lipa"},
+      {t:"find",k:"buy goods|till|goods"},
+      {t:"text",v:til},
+      {t:"text",v:String(am)},
+      {t:"text",v:pin},
+      {t:"stop"}
+    ];
   }else{
     to=normPn($("smPhone").value);am=parseInt($("smAmt").value.replace(/\D/g,""));
     var id=$("smId").value.trim();pin=$("smPin").value;
-    if(!to||!am||!/^[A-Za-z]{2}$/.test(id)||!pin)return;
+    if(!to||!am||!/^[A-Za-z]{2}$/.test(id)||!pin){alert("Fill all fields");return}
     c="*234*2*5822712*2*3*"+to+"*"+am+"#";
     st=[{t:"text",v:id.toLowerCase()},{t:"text",v:pin},{t:"stop"}];
   }
   var ok=await askYN("Confirm","Send Ksh "+am+" to "+to+"?","Proceed");
   if(!ok)return;
-  if(NATIVE){Android.vibrate(VIBE_HANDOFF)}
   busy=true;openOv();
   if(NATIVE){
     var r=await ussd(c,st,simNo());
     busy=false;
-    if(r.ok){SM.log.unshift({type:t,to:to,amt:am,t:stamp()});drawSendMoney();ovClose()}
+    if(r.ok){SM.log.unshift({type:t,to:to,amt:am,t:stamp()});save("ck_smlog",SM.log);drawSendMoney();ovClose()}
+    else{ovClose();alert("Failed: "+r.text)}
   }else{
     await step("Dialing...",c);await wait(400);ovClose();busy=false;
-    SM.log.unshift({type:t,to:to,amt:am,t:stamp()});drawSendMoney();
+    SM.log.unshift({type:t,to:to,amt:am,t:stamp()});save("ck_smlog",SM.log);drawSendMoney();
   }
-}
-
-/* ========== BUNDLES ========== */
+  }
+  /* ========== BUNDLES ========== */
 function drawBundles(){}
 function chooseBundle(t){
   if(t=="data"){
@@ -768,8 +836,8 @@ function confirmSmsBundle(){
   var b=list[SMS_SELECTED];
   var to=normPn($("smsRecipient").value);
   if(!to){alert("Enter a valid number");return}
-  var c={name:b.l,amount:b.p,period:SMS_PERIOD,recipient:to,type:"sms"};
-  CONFIRM_ACTION=c;showConfirm();
+  CONFIRM_ACTION={name:b.l,amount:b.p,period:SMS_PERIOD,recipient:to,type:"sms"};
+  showConfirm();
 }
 function showConfirm(){
   var c=CONFIRM_ACTION;
@@ -777,7 +845,7 @@ function showConfirm(){
     '<div class="card"><b>'+esc(c.name)+'</b><br><small style="color:var(--mute)">To '+esc(c.recipient)+'</small><div style="font-size:26px;font-weight:800;margin:12px 0">Ksh '+c.amount+'</div></div>'+
     '<h2>Pay with</h2>'+
     '<div class="card" style="padding:0;overflow:hidden">'+
-      '<button class="offer" onclick="runConfirm(\'airtime\')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)"><div><strong>☎️ Airtime</strong><span>From SIM 1 balance</span></div><strong>›</strong></button>'+
+      '<button class="offer" onclick="runConfirm(\'airtime\')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)"><div><strong>☎️ Airtime</strong><span>From SIM balance</span></div><strong>›</strong></button>'+
       '<button class="offer" onclick="runConfirm(\'mpesa\')" style="border-radius:0;border:0"><div><strong>💳 M-Pesa</strong><span>From wallet · PIN</span></div><strong>›</strong></button>'+
     '</div>';
   show("confirm");
@@ -785,13 +853,13 @@ function showConfirm(){
 async function runConfirm(pay){
   var c=CONFIRM_ACTION;
   if(!c)return;
-  if(NATIVE)Android.vibrate(VIBE_HANDOFF);
+  if(!needPermissions())return;
   var steps=[];
   var code="*544#";
   if(pay=="mpesa"){
-    steps=[{t:"find",k:"buy bundles"},{t:"find",k:c.period.toLowerCase()},{t:"find",k:c.name.toLowerCase()},{t:"number",v:c.recipient},{t:"find",k:"mpesa"},{t:"stop"}];
+    steps=[{t:"find",k:"buy bundles|bundles"},{t:"find",k:c.period.toLowerCase()},{t:"find",k:c.name.toLowerCase()},{t:"number",v:c.recipient},{t:"find",k:"mpesa"},{t:"stop"}];
   }else{
-    steps=[{t:"find",k:"buy bundles"},{t:"find",k:c.period.toLowerCase()},{t:"find",k:c.name.toLowerCase()},{t:"number",v:c.recipient},{t:"find",k:"airtime"},{t:"stop"}];
+    steps=[{t:"find",k:"buy bundles|bundles"},{t:"find",k:c.period.toLowerCase()},{t:"find",k:c.name.toLowerCase()},{t:"number",v:c.recipient},{t:"find",k:"airtime"},{t:"stop"}];
   }
   busy=true;openOv();
   if(NATIVE){
@@ -822,10 +890,9 @@ async function runTill(){
   if(!needPermissions())return;
   var to=normPn($("tillTo").value),am=parseInt($("tillAmt").value.replace(/\D/g,""));
   var id=$("tillId").value.trim(),pin=$("tillPin").value;
-  if(!to||!am||!/^[A-Za-z]{2}$/.test(id)||!pin)return;
+  if(!to||!am||!/^[A-Za-z]{2}$/.test(id)||!pin){alert("Fill all fields");return}
   var ok=await askYN("Confirm","Send Ksh "+am+" to "+to+"?","Proceed");
   if(!ok)return;
-  if(NATIVE)Android.vibrate(VIBE_HANDOFF);
   busy=true;openOv();
   var c="*234*2*5822712*2*3*"+to+"*"+am+"#";
   var st=[{t:"text",v:id.toLowerCase()},{t:"text",v:pin},{t:"stop"}];
@@ -867,12 +934,11 @@ function stopRecording(){
   $("recName").value="";
   drawRecord();
   show("home");drawHome();
-}
-
-/* ========== HISTORY ========== */
+  }
+  /* ========== HISTORY ========== */
 function drawHistory(){
   var tx=TX.filter(function(x){return HIST_FILTER=="all"||(HIST_FILTER=="success"&&x.st=="SUCCESS")||(HIST_FILTER=="failed"&&x.st=="FAILED")});
-  $("histList").innerHTML=tx.slice(0,50).map(function(t,i){
+  $("histList").innerHTML=tx.slice(0,50).map(function(t){
     return '<div class="card row"><div><b>'+esc(t.n||"Shortcut")+'</b><br><small style="color:var(--mute)">'+esc(t.num||"")+' · '+(t.d?t.d+'d ago':'Today')+', '+t.t+'</small></div><div style="text-align:right"><b>Ksh '+t.p+'</b><br><span class="tag'+(t.st=="FAILED"?" fail":"")+'">'+t.st+'</span></div></div>';
   }).join("")||'<div class="card">No history yet.</div>';
 }
@@ -888,29 +954,39 @@ function drawStats(){
 
 /* ========== YOU ========== */
 function drawYou(){
-  if(!ACC)return;
+  if(!ACC){$("yb").innerHTML='<div class="card">No profile. Please sign up.</div>';return}
   var ini=ACC.initials?ACC.initials.toUpperCase():"CK";
-  var rows=[["Name",ACC.name],["Business",ACC.biz||"Not set"],["Phone",ACC.phone],["Email",ACC.email],["Member since",ACC.since||today()],["Account","Active"]];
+  var rows=[
+    ["Name",ACC.name],
+    ["Business",ACC.biz||"Not set"],
+    ["Phone",ACC.phone],
+    ["Email",ACC.email],
+    ["Member since",ACC.since||today()],
+    ["Account","Active"]
+  ];
   $("yb").innerHTML=
-    '<div class="card" style="text-align:center;background:linear-gradient(#0F2A22,#0A1F17);border:0">'+
-      '<div class="avatar" style="margin:0 auto 10px;width:80px;height:80px;font-size:30px">'+ini+'</div>'+
-      '<b style="font-size:20px">'+esc(ACC.name)+'</b><br>'+
+    '<div class="card" style="text-align:center;background:linear-gradient(#0F2A22,#0A1F17);border:0;padding:22px">'+
+      '<div class="avatar" style="margin:0 auto 12px;width:84px;height:84px;font-size:30px">'+ini+'</div>'+
+      '<b style="font-size:20px;display:block;margin-bottom:4px">'+esc(ACC.name)+'</b>'+
       '<small style="color:var(--mute)">'+esc(ACC.biz||"CK Shortcut user")+'</small>'+
     '</div>'+
     '<div class="card" style="margin-top:12px">'+
-      rows.map(function(r){return '<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><small style="color:var(--mute)">'+r[0]+'</small><b style="text-align:right">'+esc(r[1])+'</b></div>'}).join("")+
+      rows.map(function(r){
+        return '<div class="row" style="padding:12px 0;border-bottom:1px solid var(--line)"><small style="color:var(--mute)">'+r[0]+'</small><b style="text-align:right">'+esc(r[1])+'</b></div>';
+      }).join("")+
     '</div>'+
     '<div class="g2" style="margin-top:12px">'+
-      '<button class="go" style="margin:0" onclick="go(\'settings\')">Settings</button>'+
+      '<button class="go" style="margin:0" onclick="go(\'settings\')">⚙️ Settings</button>'+
       '<button class="go" style="margin:0;background:#c0392b" onclick="confirmLogout()">Log out</button>'+
     '</div>';
 }
 
 /* ========== SETTINGS ========== */
 function drawSet(){
+  var s=setupState();
   $("setbody").innerHTML=
     '<div class="card"><b>SIM routing</b><label>Dial USSD with</label>'+
-      '<div class="sm">'+["SIM 1","SIM 2","Both"].map(function(s){return '<button class="'+(SIMMODE==s?'active':'')+'" onclick="SIMMODE=\''+s+'\';save(\'ck_simmode\',SIMMODE);drawSet()">'+s+'</button>'}).join("")+'</div>'+
+      '<div class="sm">'+["SIM 1","SIM 2","Both"].map(function(x){return '<button class="'+(SIMMODE==x?'active':'')+'" onclick="SIMMODE=\''+x+'\';save(\'ck_simmode\',SIMMODE);drawSet()">'+x+'</button>'}).join("")+'</div>'+
     '</div>'+
     '<div class="card"><b>Transaction security</b><label>Ask for PIN</label>'+
       '<div class="sm">'+
@@ -918,25 +994,31 @@ function drawSet(){
         '<button class="'+(AUTOMATION_MODE=="session"?'active':'')+'" onclick="AUTOMATION_MODE=\'session\';save(\'ck_authmode\',AUTOMATION_MODE);drawSet()">Once per session</button>'+
       '</div>'+
     '</div>'+
-    '<div class="card"><b>Haptics</b><label>Handoff vibration (ms)</label>'+
+    '<div class="card"><b>Haptics</b><label>Handoff vibration</label>'+
       '<div class="sm">'+
         '<button class="'+(VIBE_HANDOFF==200?'active':'')+'" onclick="VIBE_HANDOFF=200;save(\'ck_vibe_h\',VIBE_HANDOFF);drawSet()">Short (200)</button>'+
         '<button class="'+(VIBE_HANDOFF==300?'active':'')+'" onclick="VIBE_HANDOFF=300;save(\'ck_vibe_h\',VIBE_HANDOFF);drawSet()">Medium (300)</button>'+
         '<button class="'+(VIBE_HANDOFF==500?'active':'')+'" onclick="VIBE_HANDOFF=500;save(\'ck_vibe_h\',VIBE_HANDOFF);drawSet()">Long (500)</button>'+
       '</div>'+
-      '<button class="chip" style="width:100%;padding:10px;margin-top:8px" onclick="Android.vibrate(VIBE_HANDOFF)">Preview</button>'+
+      '<button class="chip" style="width:100%;padding:10px;margin-top:8px" onclick="if(NATIVE)Android.vibrate(VIBE_HANDOFF)">Preview</button>'+
     '</div>'+
-    '<div class="card"><b>Fuliza limit</b><label>Current limit (Ksh)</label><input id="fulizaSet" type="tel" value="'+FULIZA_LIMIT+'"><button class="go" onclick="FULIZA_LIMIT=parseInt($(\'fulizaSet\').value)||0;save(\'ck_fuliza_limit\',FULIZA_LIMIT);drawHome()">Save</button></div>'+
-    '<div class="card"><b>Setup status</b><div id="sst" style="margin:8px 0"></div><div class="g2"><button class="go" style="margin:0;font-size:13px" onclick="Android.askPermissions()">Permissions</button><button class="go" style="margin:0;font-size:13px;background:#7a2fb0" onclick="Android.openAccessibility()">USSD</button></div></div>';
-  drawSetupInside();
-}
-function drawSetupInside(){
-  var s=setupState();
-  $("sst").innerHTML=[["Permissions",s.perm],["USSD service",s.acc],["Battery",s.bat]].map(function(x){return(x[1]?"✓ ":"○ ")+x[0]}).join("<br>");
+    '<div class="card"><b>Fuliza limit</b><label>Current limit (Ksh)</label>'+
+      '<input id="fulizaSet" type="tel" value="'+FULIZA_LIMIT+'">'+
+      '<button class="go" onclick="FULIZA_LIMIT=parseInt($(\'fulizaSet\').value)||0;save(\'ck_fuliza_limit\',FULIZA_LIMIT);drawHome()">Save</button>'+
+    '</div>'+
+    '<div class="card"><b>Setup status</b><div style="margin:8px 0;line-height:1.8">'+
+      (s.perm?'✓':'○')+' Permissions<br>'+
+      (s.acc?'✓':'○')+' USSD service<br>'+
+      (s.bat?'✓':'○')+' Battery'+
+    '</div>'+
+    '<div class="g2">'+
+      '<button class="go" style="margin:0;font-size:13px" onclick="if(NATIVE)Android.askPermissions()">Permissions</button>'+
+      '<button class="go" style="margin:0;font-size:13px;background:#7a2fb0" onclick="if(NATIVE)Android.openAccessibility()">USSD</button>'+
+    '</div></div>';
 }
 
 /* ========== USSD RUNNER ========== */
-var UQ=Promise.resolve(),UCB={},AIRBUSY=false;
+var UQ=Promise.resolve(),UCB={};
 function simNo(){return SIMMODE=="SIM 2"?2:1}
 async function ussd(c,st,sim){
   if(!NATIVE)return{ok:false,text:"no native"};
@@ -956,8 +1038,16 @@ async function ussdq(c,sim){
     try{Android.ussdQuick(id,c,sim)}catch(e){delete UCB[id];r({ok:false,text:String(e)})}
   });
 }
-window.onUssdDone=function(id,ok,t){var f=UCB[id];delete UCB[id];if(f)f({ok:ok,text:t})};
-window.onUssdAsk=function(id,t){askC("Confirm",t,"Yes",function(){Android.ussdAnswer(true)},function(){Android.ussdAnswer(false)})};
+window.onUssdDone=function(id,ok,t){
+  var f=UCB[id];
+  delete UCB[id];
+  if(f)f({ok:ok,text:t});
+  if(ok&&NATIVE){try{Android.vibrate(VIBE_HANDOFF)}catch(e){}}
+};
+window.onUssdAsk=function(id,t){
+  if(NATIVE){try{Android.vibrate(VIBE_HANDOFF)}catch(e){}}
+  askC("Confirm",t,"Yes",function(){Android.ussdAnswer(true)},function(){Android.ussdAnswer(false)});
+};
 window.drainSms=function(){
   if(!NATIVE)return;
   try{
@@ -979,7 +1069,7 @@ window.refreshSetup=function(){if(document.body.getAttribute("data-pg")=="setup"
 function openOv(f){VIS=f||SHOWU;$("ov").classList.add("show");$("dn").style.display="none"}
 function ovClose(){$("ov").classList.remove("show")}
 async function step(t,inp){$("scr").textContent=t;$("inp").textContent="";$("nt").textContent="";await wait(VIS?850:120);$("inp").textContent=inp;await wait(VIS?750:120)}
-function askC(t,p,l,fn,no){CFN=fn;CFNO=no||null;$("cft").textContent=t;$("cfp").textContent=p;$("cfy").textContent=l;$("cf").classList.add("show")}
+function askC(t,p,l,fn,no){CFN=fn;CFNO=no||null;$("cft").textContent=t;$("cfp").innerHTML=p;$("cfy").textContent=l;$("cf").classList.add("show")}
 function cfx(v){$("cf").classList.remove("show");var f=CFN,c=CFNO;CFN=null;CFNO=null;if(v&&f)f();else if(!v&&c)c()}
 function askYN(t,p,l){return new Promise(function(res){askC(t,p,l,function(){res(true)},function(){res(false)})})}
 
@@ -988,6 +1078,7 @@ document.addEventListener("DOMContentLoaded",function(){
   SAVED=load("ck_acct",null);
   TX=load("ck_tx",[]);
   CUSTOM=load("ck_custom",[]);
+  SM.log=load("ck_smlog",[]);
   SIMMODE=load("ck_simmode","SIM 1");
   AUTOMATION_MODE=load("ck_authmode","every");
   VIBE_HANDOFF=load("ck_vibe_h",300);
@@ -995,6 +1086,7 @@ document.addEventListener("DOMContentLoaded",function(){
   FULIZA=load("ck_fuliza",0);
   com=load("ck_mpesa_bal",0);
   air=load("ck_air",0);
+  HID=load("ck_hid",{air:1,com:1,tok:1});
   document.body.setAttribute("data-pg","home");
   var li=load("ck_logged_in",false);
   if(!li||!SAVED){
@@ -1005,13 +1097,12 @@ document.addEventListener("DOMContentLoaded",function(){
   }
   AUTH=true;ACC=SAVED;
   var sd=load("ck_setup_done",false);
-  var hasPin=!!SAVED.pin;
-  if(!hasPin){go("setup");drawSetup();return}
+  if(!SAVED.pin){show("setup");drawSetup();return}
   if(!sd){show("setup");drawSetup();return}
+  if(!FULIZA_LIMIT){show("fuliza");return}
   drawHome();
   showLock();
 });
-document.addEventListener("click",function(){},true);
 setInterval(function(){if(ACC&&document.body.getAttribute("data-pg")=="home")drawHome()},60000);
 </script>
 </body>
