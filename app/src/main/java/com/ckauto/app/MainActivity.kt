@@ -11,7 +11,10 @@ import android.os.Build
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import android.os.Bundle
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -19,6 +22,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.webkit.WebViewAssetLoader
 import org.json.JSONObject
 
@@ -65,6 +69,11 @@ class MainActivity : AppCompatActivity() {
             m.photoPicker = cb
             val i = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             try { m.photoResult.launch(i) } catch (e: Exception) { cb(null) }
+        }
+
+        fun askFingerprint() {
+            val m = ref ?: return
+            m.showFingerprint()
         }
     }
 
@@ -113,6 +122,35 @@ class MainActivity : AppCompatActivity() {
                 web.evaluateJavascript("nativeBack()") { r -> if (r != "true") moveTaskToBack(true) }
             }
         })
+    }
+
+    fun showFingerprint() {
+        val mgr = BiometricManager.from(this)
+        val canBio = mgr.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+        if (canBio != BiometricManager.BIOMETRIC_SUCCESS) {
+            runOnUiThread {
+                web.evaluateJavascript("window.onFingerprint(false)", null)
+            }
+            return
+        }
+        val executor = ContextCompat.getMainExecutor(this)
+        val prompt = BiometricPrompt(this as FragmentActivity, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    runOnUiThread { web.evaluateJavascript("window.onFingerprint(true)", null) }
+                }
+                override fun onAuthenticationError(code: Int, msg: CharSequence) {
+                    runOnUiThread { web.evaluateJavascript("window.onFingerprint(false)", null) }
+                }
+                override fun onAuthenticationFailed() { }
+            })
+        val info = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Unlock CK Shortcut")
+            .setSubtitle("Use your fingerprint or face")
+            .setNegativeButtonText("Use PIN")
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+            .build()
+        prompt.authenticate(info)
     }
 
     override fun onResume() {
