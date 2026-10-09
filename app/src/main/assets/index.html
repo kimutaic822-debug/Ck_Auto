@@ -698,6 +698,7 @@ function greeting(){
   if(h>=12&&h<17)return{em:"☀️",t:"Good afternoon"};
   if(h>=17&&h<22)return{em:"🌆",t:"Good evening"};
   return{em:"🌙",t:"Good night"};
+  $("hName").innerHTML='<span style="color:#10B981">'+surname(ACC.name)+'</span> '+g.em;
 }
 function surname(n){var p=String(n||"").split(/\s+/);return p[p.length-1]||p[0]||"friend"}
 function drawHome(){
