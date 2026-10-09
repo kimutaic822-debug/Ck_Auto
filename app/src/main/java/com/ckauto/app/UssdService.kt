@@ -1,4 +1,4 @@
-package com.ckauto.app
+package com.ckshortcut.app
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
@@ -8,12 +8,14 @@ import android.os.Looper
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import org.json.JSONObject
 
 class UssdService : AccessibilityService() {
     private val h = Handler(Looper.getMainLooper())
     private var pending: Runnable? = null
     private var lastText = ""
     private var lastAt = 0L
+    private var lastRecText = ""
 
     override fun onServiceConnected() {
         instance = this
@@ -32,9 +34,12 @@ class UssdService : AccessibilityService() {
     override fun onInterrupt() {}
 
     override fun onAccessibilityEvent(e: AccessibilityEvent?) {
-        if (e == null || !UssdEngine.active) return
+        if (e == null) return
         val pkg = e.packageName?.toString() ?: return
         if (pkg == packageName || pkg.contains("systemui") || pkg.contains("launcher")) return
+
+        if (!recording && !UssdEngine.active) return
+
         pending?.let { h.removeCallbacks(it) }
         val r = Runnable { process() }
         pending = r
@@ -61,6 +66,17 @@ class UssdService : AccessibilityService() {
         val ed = edit
         if (text.isEmpty() && ed == null) return
         if (ed == null && buttons.isEmpty()) return
+
+        // ---------- RECORDING MODE ----------
+        if (recording) {
+            if (text != lastRecText && text.isNotEmpty()) {
+                lastRecText = text
+                sendToJs("window.captureRecordStep(" + JSONObject.quote(text) + ")")
+            }
+            return
+        }
+
+        // ---------- NORMAL MODE ----------
         val now = System.currentTimeMillis()
         if (text == lastText && now - lastAt < 6000) return
         lastText = text
@@ -77,6 +93,11 @@ class UssdService : AccessibilityService() {
         }
     }
 
+    private fun sendToJs(js: String) {
+        val w = MainActivity.ref?.web ?: return
+        w.post { w.evaluateJavascript(js, null) }
+    }
+
     private fun click(btns: List<AccessibilityNodeInfo>, names: List<String>) {
         for (n in names) {
             val b = btns.firstOrNull { it.text?.toString()?.trim()?.lowercase() == n }
@@ -89,10 +110,8 @@ class UssdService : AccessibilityService() {
 
     companion object {
         var instance: UssdService? = null
-        fun kick() {
-            instance?.again()
-        }
-
+        var recording = false
+        fun kick() { instance?.again() }
         fun enabled(c: Context): Boolean {
             val s = Settings.Secure.getString(c.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
             return s != null && s.contains(c.packageName)
