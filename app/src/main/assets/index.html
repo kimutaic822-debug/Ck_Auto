@@ -527,7 +527,8 @@ function showLock(){
   $("lockGreeting").textContent="Welcome back";
   $("lockWho").textContent="Tap fingerprint or enter PIN";
   updatePinDots();
-}
+  if(NATIVE){setTimeout(function(){try{Android.askFingerprint()}catch(e){}},400)}
+  }
 function showCreatePin(phase){
   $("lockScreen").style.display="flex";
   LOCKED=true;PIN="";PIN_PHASE=phase;
