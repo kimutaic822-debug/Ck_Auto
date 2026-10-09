@@ -791,8 +791,23 @@ function drainRecentSms(){
 }
 async function doAirtimeCheck(){
   if(!NATIVE){await wait(600);return}
-  try{var r=await ussdq("*144#",simNo());if(r&&r.ok){var v=parseAir(r.text);if(v!==null){air=v;save("ck_air",v)}}}catch(e){}
+  try{
+    var r=await ussdq("*144#",simNo());
+    if(r&&r.ok){
+      var v=parseAir(r.text);
+      if(v!==null){air=v;save("ck_air",v);}
+      else if(r.text){air=parseAirFallback(r.text);if(air!==null)save("ck_air",air);}
+    }
+  }catch(e){}
 }
+function parseAirFallback(t){
+  if(!t)return null;t=String(t);
+  var nums=t.match(/[\d]+(?:\.[\d]+)?/g);
+  if(!nums)return null;
+  var vals=nums.map(function(x){return parseFloat(x)}).filter(function(x){return isFinite(x)&&x>=0&&x<1000000});
+  if(!vals.length)return null;
+  return Math.max.apply(null,vals);
+  }
 function parseAir(t){
   if(!t)return null;t=String(t);
   var m=t.match(/(?:ksh|kes)\.?\s*([\d,]+(?:\.\d+)?)/i);
