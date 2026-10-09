@@ -1,4 +1,4 @@
-package com.ckauto.app
+package com.ckshortcut.app
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -25,9 +25,15 @@ import org.json.JSONObject
 class MainActivity : AppCompatActivity() {
     lateinit var web: WebView
     private var fileCb: ValueCallback<Array<Uri>>? = null
+    private var photoPicker: ((Uri?) -> Unit)? = null
     private val picker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         fileCb?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(r.resultCode, r.data))
         fileCb = null
+    }
+    private val photoResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+        val uri = r.data?.data
+        photoPicker?.invoke(uri)
+        photoPicker = null
     }
 
     companion object {
@@ -39,22 +45,26 @@ class MainActivity : AppCompatActivity() {
             }
             val pi = PendingIntent.getActivity(c, 2, Intent(c, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
             val n = NotificationCompat.Builder(c, "ck_ask")
-                .setContentTitle("CK Auto: confirm recipient")
+                .setContentTitle("CK Shortcut: confirm")
                 .setContentText(text.replace("\n", " "))
-                .setSmallIcon(android.R.drawable.stat_notify_sync)
+                .setSmallIcon(R.drawable.ic_stat_ck)
                 .setContentIntent(pi)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .build()
-            try {
-                nm.notify(2, n)
-            } catch (e: SecurityException) {
-            }
+            try { nm.notify(2, n) } catch (e: SecurityException) { }
         }
 
         fun deliver() {
             val w = ref?.web ?: return
             w.post { w.evaluateJavascript("window.drainSms&&drainSms()", null) }
+        }
+
+        fun pickPhoto(cb: (Uri?) -> Unit) {
+            val m = ref ?: return
+            m.photoPicker = cb
+            val i = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            try { m.photoResult.launch(i) } catch (e: Exception) { cb(null) }
         }
     }
 
@@ -72,30 +82,19 @@ class MainActivity : AppCompatActivity() {
                 loader.shouldInterceptRequest(request.url)
         }
         web.webChromeClient = object : WebChromeClient() {
-            override fun onShowFileChooser(
-                v: WebView,
-                cb: ValueCallback<Array<Uri>>,
-                p: WebChromeClient.FileChooserParams
-            ): Boolean {
+            override fun onShowFileChooser(v: WebView, cb: ValueCallback<Array<Uri>>, p: WebChromeClient.FileChooserParams): Boolean {
                 fileCb?.onReceiveValue(null)
                 fileCb = cb
-                return try {
-                    picker.launch(p.createIntent())
-                    true
-                } catch (e: Exception) {
-                    fileCb = null
-                    false
-                }
+                return try { picker.launch(p.createIntent()); true } catch (e: Exception) { fileCb = null; false }
             }
         }
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
-        web.addJavascriptInterface(Bridge(this), "Android")
+        val bridge = Bridge(this)
+        web.addJavascriptInterface(bridge, "Android")
         UssdEngine.onDone = { id, ok, text ->
             runOnUiThread {
-                web.evaluateJavascript(
-                    "window.onUssdDone(" + JSONObject.quote(id) + "," + ok + "," + JSONObject.quote(text) + ")", null
-                )
+                web.evaluateJavascript("window.onUssdDone(" + JSONObject.quote(id) + "," + ok + "," + JSONObject.quote(text) + ")", null)
             }
         }
         UssdEngine.onAsk = { id, text ->
@@ -103,12 +102,9 @@ class MainActivity : AppCompatActivity() {
                 try {
                     startActivity(Intent(this, MainActivity::class.java)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP))
-                } catch (e: Exception) {
-                }
+                } catch (e: Exception) { }
                 notifyAsk(this, text)
-                web.evaluateJavascript(
-                    "window.onUssdAsk(" + JSONObject.quote(id) + "," + JSONObject.quote(text) + ")", null
-                )
+                web.evaluateJavascript("window.onUssdAsk(" + JSONObject.quote(id) + "," + JSONObject.quote(text) + ")", null)
             }
         }
         web.loadUrl("https://appassets.androidplatform.net/assets/index.html")
