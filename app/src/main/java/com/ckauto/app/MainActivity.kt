@@ -1,4 +1,4 @@
-package com.ckshortcut.app
+package com.ckauto.app
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
