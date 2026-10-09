@@ -271,10 +271,7 @@ body[data-pg="auth"] nav,body[data-pg="auth"] .ham,body[data-pg="setup"] nav,bod
       <div><strong>📶 Data Bundles</strong><span>Record your usual offer</span></div><strong>›</strong>
     </button>
     <button class="offer" onclick="chooseBundle('sms')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)">
-      <div><strong>💬 SMS Bundles</strong><span>Fast automated flow</span></div><strong>›</strong>
-    </button>
-    <button class="offer" onclick="topupAirtime()" style="border-radius:0;border:0">
-      <div><strong>☎️ Airtime Top Up</strong><span>Buy airtime for any number</span></div><strong>›</strong>
+  <div><strong>💬 Free SMS Bundle</strong><span>Fast automated flow</span></div><strong>›</strong>
     </button>
   </div>
 </section>
@@ -511,7 +508,7 @@ function showBanner(msg,kind){
   setTimeout(function(){b.style.transition="opacity .4s";b.style.opacity="0";setTimeout(function(){b.remove()},400)},3000);
 }
 
-var PAGES=["auth","setup","fuliza","home","sendmoney","airtime","bundles","smsbundle","confirm","till","record","history","stats","you","settings","stub","myflows","flowdetail","search"];
+var PAGES=["auth","setup","fuliza","home","sendmoney","airtime","bundles","smsbundle","confirm","till","record","history","stats","you","settings","stub","myflows","flowdetail","search","recover"];
 function show(n){
   PAGES.forEach(function(x){var el=$("s-"+x);if(el)el.classList.toggle("act",x==n)});
   var tabs=["home","record","history","stats","you"];
