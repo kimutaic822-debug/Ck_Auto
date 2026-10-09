@@ -91,6 +91,11 @@ class Bridge(private val a: MainActivity) {
     }
 
     @JavascriptInterface
+    fun askFingerprint() {
+        MainActivity.askFingerprint()
+    }
+
+    @JavascriptInterface
     fun saveContact(name: String, number: String): Boolean = try {
         if (!has(Manifest.permission.WRITE_CONTACTS)) false
         else {
@@ -139,11 +144,15 @@ class Bridge(private val a: MainActivity) {
 
     @JavascriptInterface
     fun askPhotos() {
-        a.runOnUiThread { ActivityCompat.requestPermissions(a, arrayOf(photoPerm()), 2) }
+        a.runOnUiThread {
+            if (Build.VERSION.SDK_INT >= 33 && !has(Manifest.permission.READ_MEDIA_IMAGES)) {
+                ActivityCompat.requestPermissions(a, arrayOf(Manifest.permission.READ_MEDIA_IMAGES), 2)
+            }
+            MainActivity.pickPhoto { uri -> deliverPhoto(uri) }
+        }
     }
 
-    // Called by MainActivity after the picker returns a photo
-    fun deliverPhoto(uri: Uri?) {
+    private fun deliverPhoto(uri: Uri?) {
         if (uri == null) return
         try {
             val stream: InputStream? = a.contentResolver.openInputStream(uri)
