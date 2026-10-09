@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">CK Auto</string>
-    <string name="acc_desc">Lets CK Auto read and answer USSD menus so it can sell data offers for you. It only acts on phone USSD windows while a sale is running.</string>
+    <string name="app_name">CK Shortcut</string>
+    <string name="acc_desc">Lets CK Shortcut read and answer USSD menus so it can run your saved shortcuts.</string>
 </resources>
