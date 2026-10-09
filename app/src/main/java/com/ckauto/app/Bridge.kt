@@ -1,9 +1,11 @@
-package com.ckauto.app
+package com.ckshortcut.app
 
 import android.Manifest
 import android.content.ContentProviderOperation
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.PowerManager
 import android.os.Build
@@ -18,12 +20,13 @@ import android.telecom.TelecomManager
 import android.telephony.SmsManager
 import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
+import android.util.Base64
 import android.webkit.JavascriptInterface
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import org.json.JSONObject
+import java.io.InputStream
 
-/** Functions the web app can call as window.Android.xxx */
 class Bridge(private val a: MainActivity) {
 
     private fun has(p: String) = ContextCompat.checkSelfPermission(a, p) == PackageManager.PERMISSION_GRANTED
@@ -32,11 +35,11 @@ class Bridge(private val a: MainActivity) {
     fun ussd(id: String, code: String, steps: String, sim: Int, timeout: Int) {
         a.runOnUiThread {
             if (!UssdService.enabled(a)) {
-                UssdEngine.fail(id, "Turn on the CK Auto USSD service in Accessibility settings")
+                UssdEngine.fail(id, "Turn on the CK Shortcut USSD service in Accessibility settings")
                 return@runOnUiThread
             }
             if (!has(Manifest.permission.CALL_PHONE)) {
-                UssdEngine.fail(id, "Phone permission is missing. Tap Allow permissions in Settings")
+                UssdEngine.fail(id, "Phone permission is missing")
                 return@runOnUiThread
             }
             try {
@@ -56,18 +59,14 @@ class Bridge(private val a: MainActivity) {
             val l = a.getSystemService(TelecomManager::class.java).callCapablePhoneAccounts
             if (sim <= l.size) l[sim - 1] else null
         } else null
-    } catch (e: Exception) {
-        null
-    }
+    } catch (e: Exception) { null }
 
     private fun subId(sim: Int): Int? = try {
         if (sim in 1..2 && has(Manifest.permission.READ_PHONE_STATE)) {
             a.getSystemService(SubscriptionManager::class.java)
                 .getActiveSubscriptionInfoForSimSlotIndex(sim - 1)?.subscriptionId
         } else null
-    } catch (e: Exception) {
-        null
-    }
+    } catch (e: Exception) { null }
 
     @Suppress("DEPRECATION")
     @JavascriptInterface
@@ -76,20 +75,25 @@ class Bridge(private val a: MainActivity) {
         val sm = if (id != null) SmsManager.getSmsManagerForSubscriptionId(id) else SmsManager.getDefault()
         sm.sendMultipartTextMessage(to, null, sm.divideMessage(text), null, null)
         true
-    } catch (e: Exception) {
-        false
+    } catch (e: Exception) { false }
+
+    @JavascriptInterface
+    fun ussdAnswer(yes: Boolean) { a.runOnUiThread { UssdEngine.answer(yes) } }
+
+    @JavascriptInterface
+    fun startRecord(code: String, sim: Int) {
+        UssdService.recording = true
     }
 
     @JavascriptInterface
-    fun ussdAnswer(yes: Boolean) {
-        a.runOnUiThread { UssdEngine.answer(yes) }
+    fun stopRecord() {
+        UssdService.recording = false
     }
 
     @JavascriptInterface
     fun saveContact(name: String, number: String): Boolean = try {
-        if (!has(Manifest.permission.WRITE_CONTACTS)) {
-            false
-        } else {
+        if (!has(Manifest.permission.WRITE_CONTACTS)) false
+        else {
             var exists = false
             if (has(Manifest.permission.READ_CONTACTS)) {
                 val u = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number))
@@ -99,31 +103,23 @@ class Bridge(private val a: MainActivity) {
             }
             if (!exists) {
                 val ops = ArrayList<ContentProviderOperation>()
-                ops.add(
-                    ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
-                        .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
-                        .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null).build()
-                )
-                ops.add(
-                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, name).build()
-                )
-                ops.add(
-                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, number)
-                        .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build()
-                )
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                    .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
+                    .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null).build())
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, name).build())
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, number)
+                    .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build())
                 a.contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
             }
             true
         }
-    } catch (e: Exception) {
-        false
-    }
+    } catch (e: Exception) { false }
 
     @JavascriptInterface
     fun dial(number: String) {
@@ -146,20 +142,36 @@ class Bridge(private val a: MainActivity) {
         a.runOnUiThread { ActivityCompat.requestPermissions(a, arrayOf(photoPerm()), 2) }
     }
 
+    // Called by MainActivity after the picker returns a photo
+    fun deliverPhoto(uri: Uri?) {
+        if (uri == null) return
+        try {
+            val stream: InputStream? = a.contentResolver.openInputStream(uri)
+            val bmp = BitmapFactory.decodeStream(stream)
+            stream?.close()
+            if (bmp == null) return
+            val max = 512
+            val ratio = minOf(max.toFloat() / bmp.width, max.toFloat() / bmp.height, 1f)
+            val out = Bitmap.createScaledBitmap(bmp, (bmp.width * ratio).toInt(), (bmp.height * ratio).toInt(), true)
+            val bos = java.io.ByteArrayOutputStream()
+            out.compress(Bitmap.CompressFormat.JPEG, 80, bos)
+            val b64 = "data:image/jpeg;base64," + Base64.encodeToString(bos.toByteArray(), Base64.NO_WRAP)
+            val w = MainActivity.ref?.web
+            w?.post { w.evaluateJavascript("window.onPhotoPicked(" + JSONObject.quote(b64) + ")", null) }
+        } catch (e: Exception) { }
+    }
+
     @JavascriptInterface
     fun askBattery() {
         a.runOnUiThread {
             try {
-                a.startActivity(
-                    Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + a.packageName))
-                )
+                a.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + a.packageName)))
             } catch (e: Exception) {
                 a.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             }
         }
     }
 
-    /** Runs a one-step USSD code (like *144#) silently, with no dialog on screen. */
     @JavascriptInterface
     fun ussdQuick(id: String, code: String, sim: Int) {
         a.runOnUiThread {
@@ -175,7 +187,6 @@ class Bridge(private val a: MainActivity) {
                     override fun onReceiveUssdResponse(t: TelephonyManager, r: String, resp: CharSequence) {
                         UssdEngine.onDone?.invoke(id, true, resp.toString())
                     }
-
                     override fun onReceiveUssdResponseFailed(t: TelephonyManager, r: String, c: Int) {
                         UssdEngine.onDone?.invoke(id, false, "USSD failed ($c)")
                     }
@@ -195,8 +206,7 @@ class Bridge(private val a: MainActivity) {
                 i.putExtra(Intent.EXTRA_SUBJECT, subject)
                 i.putExtra(Intent.EXTRA_TEXT, body)
                 a.startActivity(i)
-            } catch (e: Exception) {
-            }
+            } catch (e: Exception) { }
         }
     }
 
@@ -245,12 +255,12 @@ class Bridge(private val a: MainActivity) {
             val i = Intent(a, KeepAliveService::class.java)
             try {
                 if (on) ContextCompat.startForegroundService(a, i) else a.stopService(i)
-            } catch (e: Exception) {
-            }
+                a.getSharedPreferences("ck", android.content.Context.MODE_PRIVATE)
+                    .edit().putBoolean("automation_on", on).apply()
+            } catch (e: Exception) { }
         }
     }
 
-    /** Vibrates for the given milliseconds. Used by the emergency alerts. */
     @JavascriptInterface
     fun vibrate(ms: Int) {
         try {
@@ -261,6 +271,6 @@ class Bridge(private val a: MainActivity) {
                 @Suppress("DEPRECATION")
                 v.vibrate(ms.toLong())
             }
-        } catch (e: Exception) {}
+        } catch (e: Exception) { }
     }
 }
