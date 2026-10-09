@@ -27,7 +27,8 @@ textarea{min-height:100px}
 .sm button.active{background:var(--brand);color:#0E1412;border-color:var(--brand);font-weight:700}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .greeting{display:flex;justify-content:space-between;align-items:center;padding:0 14px 14px}
-.avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#FBBF24,#EF4444);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#0E1412}
+.avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#FBBF24,#EF4444);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#0E1412;background-size:cover;background-position:center;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
 .greet-text{flex:1;margin-left:12px}
 .greet-text small{color:var(--mute);font-size:12px}
 .greet-text b{font-size:18px;display:block}
@@ -40,10 +41,16 @@ textarea{min-height:100px}
 .balcard.airtime{background:linear-gradient(160deg,#1A2A3F,#0F1A2A)}
 .balcard .top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mute)}
 .simchip{background:rgba(255,255,255,.08);color:var(--ink);border:0;padding:4px 10px;border-radius:99px;font:inherit;font-size:11px;cursor:pointer}
-.eye{background:none;border:0;color:var(--ink);cursor:pointer;padding:6px;font-size:24px;line-height:1}
+.eye{background:none;border:0;color:var(--ink);cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center}
+.eye svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .balcard .amt{font-size:28px;font-weight:800;margin:10px 0 6px;letter-spacing:-.5px}
-.balcard .sub{font-size:11px;color:var(--mute);margin-bottom:10px;cursor:pointer}
+.balcard .sub{font-size:11px;color:var(--mute);margin-bottom:10px}
 .balcard .viewbtn{width:100%;padding:10px;border-radius:10px;background:transparent;border:1.5px solid var(--brand);color:var(--brand);font-weight:700;font-size:13px;cursor:pointer}
+.clock{padding:0 14px 14px;text-align:center}
+.clock-time{font-family:Consolas,"Courier New",monospace;font-size:38px;font-weight:800;letter-spacing:3px;cursor:pointer;display:inline-block}
+.clock-time .sep{color:#EF4444;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:.4}}
+.clock-time .num{color:#10B981}
 .qa{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:0 14px}
 .qa-btn{background:none;border:0;color:var(--ink);font:inherit;font-size:11px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}
 .qa-ico{width:50px;height:50px;border-radius:14px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:20px}
@@ -97,6 +104,12 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 .lockScreen .forgot{text-align:center;margin-top:20px}
 .lockScreen .forgot button{background:none;border:0;color:var(--brand);font:inherit;cursor:pointer}
 .err{color:#c0392b;font-size:13px;min-height:18px;margin:6px 0 0}
+body[data-pg="auth"] nav,body[data-pg="auth"] .ham,body[data-pg="setup"] nav,body[data-pg="setup"] .ham,body[data-pg="fuliza"] nav,body[data-pg="fuliza"] .ham{display:none!important}
+.pull-indicator{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(-100px);background:var(--brand);color:#0E1412;padding:8px 16px;border-radius:99px;font-size:12px;font-weight:700;z-index:9999;transition:transform .3s ease;box-shadow:0 4px 15px rgba(0,0,0,.4)}
+.pull-indicator.show{transform:translateX(-50%) translateY(0)}
+.history-item{cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.history-item.selected{border-color:var(--brand);background:var(--brand2)}
+.history-body{max-height:220px;overflow-y:auto;border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
 </style>
 </head>
 <body>
@@ -125,6 +138,8 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
     <div class="forgot"><button onclick="forgotPin()">Forgot PIN?</button></div>
   </div>
 </div>
+
+<div class="pull-indicator" id="pullInd">Refreshing…</div>
 
 <section id="s-auth">
   <div style="text-align:center;padding:32px 0 20px">
@@ -157,7 +172,6 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
   </div>
   <button class="chip" style="width:100%;text-align:center;padding:12px" onclick="skipFuliza()">Skip for now</button>
 </section>
-
 <section id="s-home" class="act">
   <div class="greeting">
     <div class="avatar" id="hAv" onclick="go('you')">CK</div>
@@ -166,7 +180,6 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
       <b id="hName">--</b>
     </div>
     <div class="hdr-icons">
-      <button onclick="refreshAll()" id="hdrRefresh">🔄</button>
       <button onclick="go('search')">🔍</button>
     </div>
   </div>
@@ -175,16 +188,16 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
     <div class="balcard mpesa" onclick="refreshAll()">
       <div class="top">
         <button class="simchip" id="mpSim" onclick="event.stopPropagation();pickSim('mpesa')">SIM 1 ▾</button>
-        <button class="eye" id="mpEye" onclick="event.stopPropagation();toggleBal('com')">👁</button>
+        <button class="eye" id="mpEye" onclick="event.stopPropagation();toggleBal('com')"></button>
       </div>
       <div class="amt" id="mpAmt">Ksh ****</div>
-      <div class="sub" id="mpFul" onclick="event.stopPropagation();toggleFuliza()">👁 Fuliza hidden</div>
+      <div class="sub" id="mpFul">👁 Fuliza hidden</div>
       <button class="viewbtn" onclick="event.stopPropagation();go('history')">View Statements</button>
     </div>
     <div class="balcard airtime" onclick="refreshAll()">
       <div class="top">
         <button class="simchip" id="airSim" onclick="event.stopPropagation();pickSim('airtime')">SIM 1 ▾</button>
-        <button class="eye" id="airEye" onclick="event.stopPropagation();toggleBal('air')">👁</button>
+        <button class="eye" id="airEye" onclick="event.stopPropagation();toggleBal('air')"></button>
       </div>
       <div class="amt" id="airAmt">Ksh ****</div>
       <div class="sub sync-ts" id="airSync">Tap to refresh</div>
@@ -192,175 +205,8 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
     </div>
   </div>
 
-  <div class="sec-hdr"><h2>Quick Actions</h2><button class="chip" onclick="show('stub')">View all</button></div>
-  <div class="qa">
-    <button class="qa-btn" onclick="branchSendMoney()"><div class="qa-ico">💸</div>Send Money</button>
-    <button class="qa-btn" onclick="quickAction('paybill')"><div class="qa-ico">🛒</div>Paybill</button>
-    <button class="qa-btn" onclick="quickAction('buygoods')"><div class="qa-ico">🏪</div>Buy Goods</button>
-    <button class="qa-btn" onclick="quickAction('withdraw')"><div class="qa-ico">🏧</div>Withdraw</button>
-    <button class="qa-btn" onclick="go('bundles')"><div class="qa-ico">📦</div>Buy Bundles</button>
-    <button class="qa-btn" onclick="topupAirtime()"><div class="qa-ico">☎️</div>Airtime</button>
-    <button class="qa-btn" onclick="go('record')"><div class="qa-ico">➕</div>Add Function</button>
-    <button class="qa-btn" onclick="go('myflows')"><div class="qa-ico">📼</div>My Flows</button>
-  </div>
-
-  <div class="sec-hdr" style="margin-top:20px"><h2>Frequents</h2><button class="chip" onclick="toggleFreq()" id="freqTog">▼</button></div>
-  <div id="freqWrap">
-    <div class="freq-tabs">
-      <button class="active" onclick="setFreq('send',this)">Send</button>
-      <button onclick="setFreq('pay',this)">Pay</button>
-      <button onclick="setFreq('bundles',this)">Bundles</button>
-    </div>
-    <div class="freq-list" id="freqList"></div>
-  </div>
-
-  <div class="sec-hdr" style="margin-top:8px"><h2>Explore & Discover 🔥</h2></div>
-  <div class="banner">
-    <b>New to CK Shortcut?</b>
-    <small>Save any USSD flow as a one-tap shortcut. Record it once, use it forever.</small>
-  </div>
-</section>
-
-<section id="s-sendmoney">
-  <h2 style="margin-top:8px">Send Money to...</h2>
-  <div class="card"><b>What do you want to do?</b><div class="list" style="margin-top:10px" id="smTypes"></div></div>
-  <div id="smForm"></div>
-  <h2>Recent transfers</h2>
-  <div class="list" id="smLog"></div>
-</section>
-
-<section id="s-airtime">
-  <h2 style="margin-top:8px">Buy Airtime</h2>
-  <label>For number</label>
-  <input id="airTo" type="tel" maxlength="13" placeholder="07XX XXX XXX">
-  <label>Amount (Ksh)</label>
-  <input id="airAmt" type="tel" inputmode="numeric" placeholder="e.g. 100">
-  <div class="sm">
-    <button onclick="$('airAmt').value=50">50</button>
-    <button onclick="$('airAmt').value=100">100</button>
-    <button onclick="$('airAmt').value=200">200</button>
-    <button onclick="$('airAmt').value=500">500</button>
-  </div>
-  <button class="go" onclick="runAirtime()">Buy Airtime</button>
-  <p class="note">Dials *140*amount*phone# silently.</p>
-</section>
-
-<section id="s-bundles">
-  <h2 style="margin-top:8px">Buy Bundles</h2>
-  <div class="card" style="padding:0;overflow:hidden">
-    <button class="offer" onclick="chooseBundle('data')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)">
-      <div><strong>📶 Data Bundles</strong><span>Record your usual offer</span></div><strong>›</strong>
-    </button>
-    <button class="offer" onclick="chooseBundle('sms')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)">
-      <div><strong>💬 SMS Bundles</strong><span>Fast automated flow (*188#)</span></div><strong>›</strong>
-    </button>
-    <button class="offer" onclick="topupAirtime()" style="border-radius:0;border:0">
-      <div><strong>☎️ Airtime Top Up</strong><span>Buy airtime for any number</span></div><strong>›</strong>
-    </button>
-  </div>
-</section>
-
-<section id="s-smsbundle">
-  <h2 style="margin-top:8px">SMS Bundles</h2>
-  <label for="smsRecipient">For number</label>
-  <input id="smsRecipient" type="tel" inputmode="numeric" maxlength="13" placeholder="07XX XXX XXX">
-  <div class="sm" id="smsTabs" style="margin-top:16px">
-    <button class="active" onclick="setSmsPeriod('Daily',this)">Daily</button>
-    <button onclick="setSmsPeriod('Weekly',this)">Weekly</button>
-    <button onclick="setSmsPeriod('Monthly',this)">Monthly</button>
-  </div>
-  <div class="list" id="smsList"></div>
-</section>
-
-<section id="s-confirm">
-  <h2 style="margin-top:8px">Confirm</h2>
-  <div id="confirmBody"></div>
-</section>
-
-<section id="s-till">
-  <h2 style="margin-top:8px">Send from Till</h2>
-  <div class="card"><b>How it works</b><br><small style="color:var(--mute)">Dial full string → Customer ID → PIN → confirm on Safaricom screen.</small></div>
-  <label>Send to</label><input id="tillTo" type="tel" maxlength="13" placeholder="07XX XXX XXX">
-  <label>Amount (Ksh)</label><input id="tillAmt" type="tel" inputmode="numeric">
-  <label>Customer ID (2 letters)</label><input id="tillId" maxlength="2" autocapitalize="none" oninput="this.value=this.value.replace(/[^a-zA-Z]/g,'').toLowerCase()">
-  <label>PIN</label><input id="tillPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">
-  <button class="go" onclick="runTill()">Send money</button>
-  <p class="note">Your PIN is used once and never saved.</p>
-  <h2>Recent till transfers</h2><div class="list" id="tillLog"></div>
-</section>
-
-<section id="s-record">
-  <h2 style="margin-top:8px">Record a Function</h2>
-  <div class="card" style="text-align:center;padding:22px">
-    <div style="font-size:44px;margin-bottom:10px">🎥</div>
-    <b>Set once, use forever</b>
-    <p class="note" style="margin-top:8px">Enter the base code below. Then dial it and complete the flow once. We save every step — next time, just tap and go.</p>
-  </div>
-  <label>Function name</label>
-  <input id="recName" placeholder="e.g. Buy Airtime">
-  <label>Base USSD code</label>
-  <input id="recBase" placeholder="e.g. *544# or *334#">
-  <p class="note">This is the code you'll dial to start the flow.</p>
-  <label>Category</label>
-  <div class="sm" id="recCat">
-    <button class="active" onclick="setRecCat('Bundles',this)">Bundles</button>
-    <button onclick="setRecCat('Bills',this)">Bills</button>
-    <button onclick="setRecCat('Send',this)">Send</button>
-    <button onclick="setRecCat('Other',this)">Other</button>
-  </div>
-  <button class="go" onclick="startRecording()">Start Recording</button>
-  <p class="note">While recording, dial your USSD code and go through the flow. Come back here when done.</p>
-  <div id="recStatus"></div>
-</section>
-
-<section id="s-history">
-  <h2 style="margin-top:8px">History</h2>
-  <div class="sm" id="histFilters">
-    <button class="active" onclick="setHistFilter('all',this)">All</button>
-    <button onclick="setHistFilter('success',this)">Success</button>
-    <button onclick="setHistFilter('failed',this)">Failed</button>
-  </div>
-  <div class="list" id="histList"></div>
-</section>
-
-<section id="s-stats">
-  <h2 style="margin-top:8px">Stats</h2>
-  <div class="card">
-    <b>Balances</b>
-    <div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><small style="color:var(--mute)">M-Pesa</small><b>Ksh <span id="statMp">--</span></b></div>
-    <div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><small style="color:var(--mute)">Airtime</
-      <section id="s-home" class="act">
-  <div class="greeting">
-    <div class="avatar" id="hAv" onclick="go('you')">CK</div>
-    <div class="greet-text">
-      <small id="hGreet">Good morning</small>
-      <b id="hName">--</b>
-    </div>
-    <div class="hdr-icons">
-      <button onclick="refreshAll()" id="hdrRefresh">🔄</button>
-      <button onclick="go('search')">🔍</button>
-    </div>
-  </div>
-
-  <div class="balcards">
-    <div class="balcard mpesa" onclick="refreshAll()">
-      <div class="top">
-        <button class="simchip" id="mpSim" onclick="event.stopPropagation();pickSim('mpesa')">SIM 1 ▾</button>
-        <button class="eye" id="mpEye" onclick="event.stopPropagation();toggleBal('com')">👁</button>
-      </div>
-      <div class="amt" id="mpAmt">Ksh ****</div>
-      <div class="sub" id="mpFul" onclick="event.stopPropagation();toggleFuliza()">👁 Fuliza hidden</div>
-      <button class="viewbtn" onclick="event.stopPropagation();go('history')">View Statements</button>
-    </div>
-    <div class="balcard airtime" onclick="refreshAll()">
-      <div class="top">
-        <button class="simchip" id="airSim" onclick="event.stopPropagation();pickSim('airtime')">SIM 1 ▾</button>
-        <button class="eye" id="airEye" onclick="event.stopPropagation();toggleBal('air')">👁</button>
-      </div>
-      <div class="amt" id="airAmt">Ksh ****</div>
-      <div class="sub sync-ts" id="airSync">Tap to check balance</div>
-      <button class="viewbtn" onclick="event.stopPropagation();topupAirtime()">Top Up Airtime</button>
-    </div>
+  <div class="clock">
+    <div class="clock-time" id="digitalClock" onclick="changeClockFormat()"></div>
   </div>
 
   <div class="sec-hdr"><h2>Quick Actions</h2><button class="chip" onclick="show('stub')">View all</button></div>
@@ -394,8 +240,8 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
     <b>New to CK Shortcut?</b>
     <small>Save any USSD flow as a one-tap shortcut. Record it once, use it forever.</small>
   </div>
-      </section>
-      <section id="s-sendmoney">
+</section>
+<section id="s-sendmoney">
   <h2 style="margin-top:8px">Send Money to...</h2>
   <div class="card"><b>What do you want to do?</b><div class="list" style="margin-top:10px" id="smTypes"></div></div>
   <div id="smForm"></div>
@@ -558,8 +404,10 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 
 <section id="s-stub">
   <h2 style="margin-top:8px">Coming soon</h2>
-  <div class="card">This feature is being built.</div></section>
-     <nav role="tablist">
+  <div class="card">This feature is being built.</div>
+</section>
+
+<nav role="tablist">
   <button role="tab" aria-selected="true" onclick="tab('home')" id="n-home"><i>🏠</i>Home</button>
   <button role="tab" aria-selected="false" onclick="tab('record')" id="n-record"><i>➕</i>Add</button>
   <button role="tab" aria-selected="false" onclick="tab('history')" id="n-history"><i>📜</i>History</button>
@@ -580,7 +428,7 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 <div class="ov" id="cf" onclick="if(event.target.id=='cf')cfx(0)">
   <div class="ussd" style="background:var(--card);color:var(--ink);max-width:380px" onclick="event.stopPropagation()">
     <b id="cft" style="font-size:16px"></b>
-    <p style="margin:10px 0 0;color:var(--mute);font-size:14px" id="cfp"></p>
+    <div style="margin:10px 0 0;color:var(--mute);font-size:14px" id="cfp"></div>
     <div class="g2" style="margin-top:16px">
       <button class="go" style="margin:0;background:#c0392b" onclick="cfx(0)">Cancel</button>
       <button class="go" style="margin:0" onclick="cfx(1)" id="cfy">Confirm</button>
@@ -591,7 +439,7 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
 <div class="dr" id="dr" onclick="dr(0)">
   <div class="dp" onclick="event.stopPropagation()">
     <div class="dh">
-      <div class="avatar" id="dav" style="width:56px;height:56px;font-size:20px;margin-bottom:10px">CK</div>
+      <div class="avatar" id="dav" style="width:56px;height:56px;font-size:20px;margin-bottom:10px;background-size:cover;background-position:center">CK</div>
       <b>CK Shortcut</b>
       <span id="dnm" style="display:block;margin-top:4px">Guest</span>
       <small>v1.0</small>
@@ -612,21 +460,29 @@ nav button i{display:block;font-size:18px;margin-bottom:2px;font-style:normal}
   window.onerror=function(m,s,l,c,e){document.body.insertAdjacentHTML("afterbegin",'<div style="position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:14px;z-index:99999;font-family:monospace;font-size:12px">LINE '+l+': '+m+'</div>');return true};
 
 var NATIVE=!!window.Android;
-var SAVED=null,ACC=null,AUTH=false,AUTHTAB="signup",SETUPOK=false,OWNERMODE=false;
-var on=true,busy=false,air=0,com=0,AIRKNOWN=false,SIMMODE="SIM 1",AIRAT="";
+var SAVED=null,ACC=null,AUTH=false,AUTHTAB="signup",SETUPOK=false;
+var busy=false,air=0,com=0,AIRKNOWN=false,SIMMODE="SIM 1",AIRAT="";
 var CFN=null,CFNO=null,NAVH=[],VIS=0,SHOWU=0;
-var HID={air:1,com:1,tok:1},FULIZA=0,FULIZA_LIMIT=0,FULIZA_HIDDEN=true;
-var AUTOMATION_MODE="every",VIBE_HANDOFF=300;
+var HID={air:1,com:1},FULIZA=0,FULIZA_LIMIT=0;
+var VIBE_HANDOFF=300;
 var PIN="",PIN_CONFIRM="",PINLEN=4,FAILS=0,LOCKED=true,PIN_PHASE="unlock";
-var REC_CAT="Bundles",RECORDING=false,REC_STEPS=[],REC_BASE="*544#",RE_EDIT_INDEX=-1;
+var REC_CAT="Bundles",RECORDING=false,REC_STEPS=[],REC_BASE="",RE_EDIT_INDEX=-1;
+var REC_CAPTURED=[],REC_LAST_SCREEN="";
 var TX=[],SM={type:"p2p",log:[]},CUSTOM=[],FD_INDEX=-1;
 var SMS_PERIOD="Daily",SMS_SELECTED=null,CONFIRM_ACTION=null;
 var FREQ_TYPE="send",HIST_FILTER="all";
+var CURRENCY="Ksh",CLOCK_24H=true,CLOCK_SECONDS=true;
+var CLOCK_TIMER=null;
+var HIST_SELECTED=[];
+var HISTORY_OPEN=null;
 var SMS_BUNDLES={
   Daily:[{n:"20 SMS",p:5,l:"20 SMS daily",exp:"End of day"},{n:"200 SMS",p:10,l:"200 SMS daily",exp:"End of day"},{n:"Unlimited SMS",p:20,l:"Unlimited SMS daily",exp:"End of day"}],
   Weekly:[{n:"100 SMS",p:20,l:"100 SMS weekly",exp:"7 days"},{n:"1000 SMS",p:30,l:"1000 SMS weekly",exp:"7 days"},{n:"Unlimited SMS",p:50,l:"Unlimited SMS weekly",exp:"7 days"}],
   Monthly:[{n:"1500 SMS",p:100,l:"1500 SMS monthly",exp:"30 days"},{n:"3500 SMS",p:200,l:"3500 SMS monthly",exp:"30 days"}]
 };
+
+var SVG_EYE='<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+var SVG_EYE_OFF='<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 
 function $(i){return document.getElementById(i)}
 function esc(x){return String(x).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
@@ -634,6 +490,7 @@ function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
 function normPn(v){var d=String(v).replace(/\D/g,"");if(d.length>12||!d)return null;if(/^254[71]\d{8}$/.test(d))return"0"+d.slice(3);if(/^0[71]\d{8}$/.test(d))return d;if(/^[71]\d{8}$/.test(d))return"0"+d;return null}
 function stamp(){return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
 function today(){return new Date().toLocaleDateString([],{month:"short",day:"numeric"})}
+function money(n){return CURRENCY+" "+(Number(n)||0).toFixed(2)}
 function save(k,v){try{localStorage.setItem(k,typeof v=="string"?v:JSON.stringify(v))}catch(e){}}
 function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function showBanner(msg,kind){
@@ -652,6 +509,7 @@ function show(n){
   var tabs=["home","record","history","stats","you"];
   tabs.forEach(function(x){var b=$("n-"+x);if(b)b.setAttribute("aria-selected",x==n)});
   document.body.setAttribute("data-pg",n);
+  if(n!="history"){HISTORY_OPEN=null;}
   var fns={home:drawHome,history:drawHistory,stats:drawStats,you:drawYou,settings:drawSet,sendmoney:drawSendMoney,bundles:drawBundles,smsbundle:drawSmsBundle,record:drawRecord,myflows:drawMyFlows};
   if(fns[n])fns[n]();
   window.scrollTo(0,0);
@@ -659,7 +517,7 @@ function show(n){
 function tab(n){NAVH=n=="home"?[]:["home"];show(n)}
 function go(n){dr(0);show(n)}
 function back(){var p=NAVH.pop();show(p||"home")}
-function nativeBack(){if($("cf").classList.contains("show")){cfx(0);return true}if($("dr").classList.contains("show")){dr(0);return true}if(document.body.getAttribute("data-pg")!="home"){back();return true}return false}
+function nativeBack(){if($("cf").classList.contains("show")){cfx(0);return true}if($("dr").classList.contains("show")){dr(0);return true}if(HIST_SELECTED.length){HIST_SELECTED=[];drawHistory();return true}if(document.body.getAttribute("data-pg")!="home"){back();return true}return false}
 function dr(v){$("dr").classList.toggle("show",!!v)}
 
 /* ========== LOCK ========== */
@@ -761,6 +619,7 @@ async function logIn(){
   if(h!==SAVED.pinHash){aerr("Wrong password.");return}
   ACC=SAVED;AUTH=true;
   save("ck_logged_in","true");
+  if(NATIVE){try{Android.keepAlive(true)}catch(e){}}
   var sd=load("ck_setup_done",false);
   if(!SAVED.pin){showBanner("Login successful. Welcome back "+surname(ACC.name)+"!",'ok');go("setup");return}
   if(!sd){showBanner("Login successful. Welcome back "+surname(ACC.name)+"!",'ok');show("setup");drawSetup();return}
@@ -770,6 +629,7 @@ async function logIn(){
 function logOut(){
   try{localStorage.removeItem("ck_logged_in")}catch(e){}
   ACC=null;AUTH=false;LOCKED=false;
+  if(NATIVE){try{Android.keepAlive(false)}catch(e){}}
   $("lockScreen").style.display="none";
   show("auth");drawAuth();
 }
@@ -813,8 +673,7 @@ function saveFulizaLimit(){
   if(!SAVED.pin){showCreatePin("create")}else{show("home");drawHome()}
 }
 function skipFuliza(){if(!SAVED.pin){showCreatePin("create")}else{show("home");drawHome()}}
-
-/* ========== HOME ========== */
+  /* ========== HOME ========== */
 function greeting(){
   var h=new Date().getHours();
   if(h>=5&&h<12)return{em:"🌅",t:"Good morning"};
@@ -826,33 +685,73 @@ function surname(n){var p=String(n||"").split(/\s+/);return p[p.length-1]||p[0]|
 function drawHome(){
   if(!ACC)return;
   var g=greeting();
-  $("hAv").textContent=ACC.initials?ACC.initials.toUpperCase():"CK";
+  if(ACC.photo){$("hAv").style.backgroundImage="url('"+ACC.photo+"')";$("hAv").style.backgroundSize="cover";$("hAv").style.backgroundPosition="center";$("hAv").textContent="";}
+  else{$("hAv").style.backgroundImage="";$("hAv").textContent=ACC.initials?ACC.initials.toUpperCase():"CK";}
   $("hGreet").textContent=g.t;
-  $("hName").textContent=surname(ACC.name)+" "+g.em;
+  $("hName").innerHTML='<span style="color:#059669">'+surname(ACC.name)+'</span> '+g.em;
+  var showMpesa=!HID.com;
   var showAir=!HID.air;
-  var showCom=!HID.com;
-  $("mpAmt").textContent=showCom?("Ksh "+(com||0).toFixed(2)):"Ksh ****";
-  $("airAmt").textContent=showAir?("Ksh "+(air||0).toFixed(2)):"Ksh ****";
-  $("mpEye").textContent=showCom?"🙈":"👁";
-  $("airEye").textContent=showAir?"🙈":"👁";
+  $("mpAmt").textContent=showMpesa?money(com):(CURRENCY+" ****");
+  $("airAmt").textContent=showAir?money(air):(CURRENCY+" ****");
+  $("mpEye").innerHTML=showMpesa?SVG_EYE_OFF:SVG_EYE;
+  $("airEye").innerHTML=showAir?SVG_EYE_OFF:SVG_EYE;
   $("airSync").textContent=AIRKNOWN?("Last checked "+AIRAT):"Tap to refresh";
-  if(FULIZA_HIDDEN){$("mpFul").textContent="👁 Fuliza hidden";}
-  else{var avail=Math.max(0,(FULIZA_LIMIT||0)-(FULIZA||0));$("mpFul").textContent="Fuliza: Ksh "+avail.toFixed(2)+" of Ksh "+(FULIZA_LIMIT||0);}
+  if(showMpesa){var avail=Math.max(0,(FULIZA_LIMIT||0)-(FULIZA||0));$("mpFul").textContent="Fuliza: "+money(avail)+" of "+money(FULIZA_LIMIT);}
+  else{$("mpFul").textContent="👁 Fuliza hidden";}
   $("mpSim").textContent=SIMMODE+" ▾";
   $("airSim").textContent=SIMMODE+" ▾";
   drawFreq();
+  startClock();
+}
+function startClock(){
+  stopClock();
+  tickClock();
+  CLOCK_TIMER=setInterval(tickClock,1000);
+}
+function stopClock(){if(CLOCK_TIMER){clearInterval(CLOCK_TIMER);CLOCK_TIMER=null}}
+function tickClock(){
+  var el=$("digitalClock");if(!el)return;
+  var d=new Date();
+  var h=d.getHours(),m=d.getMinutes(),s=d.getSeconds();
+  var ap="";
+  if(!CLOCK_24H){ap=h>=12?" PM":" AM";h=h%12;if(h==0)h=12;}
+  var hh=String(h).padStart(2,"0");
+  var mm=String(m).padStart(2,"0");
+  var ss=String(s).padStart(2,"0");
+  var html='<span class="num">'+hh+'</span><span class="sep">:</span><span class="num">'+mm+'</span>';
+  if(CLOCK_SECONDS)html+='<span class="sep">:</span><span class="num">'+ss+'</span>';
+  if(ap)html+='<span class="num" style="font-size:20px">'+ap+'</span>';
+  el.innerHTML=html;
+}
+function changeClockFormat(){
+  $("cft").textContent="Clock format";
+  $("cfp").innerHTML='<div style="margin-top:10px">'+
+    '<button class="offer" onclick="setClock(false,true)"><div><strong>12-hour with seconds</strong></div><strong>'+(CLOCK_24H===false&&CLOCK_SECONDS?'✓':'›')+'</strong></button>'+
+    '<button class="offer" onclick="setClock(false,false)"><div><strong>12-hour no seconds</strong></div><strong>'+(CLOCK_24H===false&&!CLOCK_SECONDS?'✓':'›')+'</strong></button>'+
+    '<button class="offer" onclick="setClock(true,true)"><div><strong>24-hour with seconds</strong></div><strong>'+(CLOCK_24H&&CLOCK_SECONDS?'✓':'›')+'</strong></button>'+
+    '<button class="offer" onclick="setClock(true,false)"><div><strong>24-hour no seconds</strong></div><strong>'+(CLOCK_24H&&!CLOCK_SECONDS?'✓':'›')+'</strong></button>'+
+  '</div>';
+  $("cfy").style.display="none";
+  $("cf").classList.add("show");
+  CFN=null;CFNO=function(){$("cfy").style.display="block"};
+}
+function setClock(h24,sec){
+  CLOCK_24H=h24;CLOCK_SECONDS=sec;
+  save("ck_clock_24",CLOCK_24H);save("ck_clock_sec",CLOCK_SECONDS);
+  $("cf").classList.remove("show");$("cfy").style.display="block";
+  tickClock();
 }
 function toggleBal(k){HID[k]=HID[k]?0:1;save("ck_hid",HID);drawHome()}
-function toggleFuliza(){FULIZA_HIDDEN=!FULIZA_HIDDEN;drawHome()}
 function refreshAll(){
   if(busy)return;
   busy=true;
-  var icon=$("hdrRefresh");
-  if(icon){icon.style.transition="transform .8s";icon.style.transform="rotate(360deg)";setTimeout(function(){icon.style.transform="rotate(0deg)"},850)}
+  var ind=$("pullInd");if(ind)ind.classList.add("show");
   drainRecentSms();
   setTimeout(function(){
     doAirtimeCheck().then(function(){
-      busy=false;AIRKNOWN=true;AIRAT=stamp();drawHome();
+      busy=false;AIRKNOWN=true;AIRAT=stamp();
+      if(ind)ind.classList.remove("show");
+      drawHome();
     });
   },200);
 }
@@ -925,10 +824,7 @@ function runFreq(k){
     CFN=null;CFNO=function(){$("cfy").style.display="block"};
     return;
   }
-  if(k=="data"){
-    askC("Record Data shortcut","Data bundles change often. Record it once and use it forever.","Record now",function(){go("record")});
-    return;
-  }
+  if(k=="data"){askC("Record Data shortcut","Data bundles change often. Record it once and use it forever.","Record now",function(){go("record")});return;}
   SM.type=k;go("sendmoney");
 }
 function startSms(period){
@@ -960,7 +856,30 @@ function branchSendMoney(){
   CFN=null;CFNO=function(){$("cfy").style.display="block"};
 }
 function pickSendType(t){CFNO=null;$("cf").classList.remove("show");$("cfy").style.display="block";SM.type=t;go("sendmoney")}
-/* ========== SEND MONEY ========== */
+
+/* ========== AIRTIME ========== */
+function topupAirtime(){if(ACC)$("airTo").value=ACC.phone;show("airtime")}
+async function runAirtime(){
+  var to=normPn($("airTo").value),am=parseInt($("airAmt").value.replace(/\D/g,""));
+  if(!to||!am){alert("Fill all fields");return}
+  if(!needPermissions())return;
+  var ok=await askYN("Confirm","Buy "+money(am)+" airtime for "+to+"?","Proceed");
+  if(!ok)return;
+  busy=true;openOv();
+  var c="*140*"+am+"*"+to+"#";
+  var st=[{t:"stop"}];
+  if(NATIVE){
+    var r=await ussd(c,st,simNo());
+    busy=false;
+    if(r.ok){TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"airtime"});save("ck_tx",TX);showBanner("Airtime sent.",'ok');}
+    else{TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"FAILED",src:"airtime",why:r.text});save("ck_tx",TX);showBanner("Failed: "+r.text,'bad');}
+    ovClose();
+  }else{
+    await step("Dialing...",c);await wait(500);ovClose();busy=false;
+    TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"airtime"});save("ck_tx",TX);
+  }
+  }
+  /* ========== SEND MONEY ========== */
 var SM_TYPES=[
   ["p2p","Send Money Any Network","*334# → Send Money → Any Network"],
   ["till2","Send from Till","*234*2*5822712*2*3*...#"],
@@ -977,18 +896,18 @@ function drawSendMoney(){
   }).join("");
   var f="";
   if(SM.type=="p2p"||SM.type=="pochi"){
-    f='<label>Recipient phone</label><input id="smPhone" type="tel" maxlength="13" placeholder="07XX XXX XXX"><label>Amount (Ksh)</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
+    f='<label>Recipient phone</label><input id="smPhone" type="tel" maxlength="13" placeholder="07XX XXX XXX"><label>Amount</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
   }else if(SM.type=="paybill"){
-    f='<label>Business number</label><input id="smBiz" type="tel" inputmode="numeric"><label>Account number</label><input id="smAcct" type="tel" inputmode="numeric"><label>Amount (Ksh)</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
+    f='<label>Business number</label><input id="smBiz" type="tel" inputmode="numeric"><label>Account number</label><input id="smAcct" type="tel" inputmode="numeric"><label>Amount</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
   }else if(SM.type=="buygoods"){
-    f='<label>Till number</label><input id="smTill" type="tel" inputmode="numeric"><label>Amount (Ksh)</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
+    f='<label>Till number</label><input id="smTill" type="tel" inputmode="numeric"><label>Amount</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
   }else if(SM.type=="wa"){
-    f='<label>Agent number</label><input id="smAgent" type="tel" inputmode="numeric"><label>Store number</label><input id="smStore" type="tel" inputmode="numeric"><label>Amount (Ksh)</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
+    f='<label>Agent number</label><input id="smAgent" type="tel" inputmode="numeric"><label>Store number</label><input id="smStore" type="tel" inputmode="numeric"><label>Amount</label><input id="smAmt" type="tel" inputmode="numeric"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
   }else{
-    f='<label>Recipient phone</label><input id="smPhone" type="tel" maxlength="13"><label>Amount (Ksh)</label><input id="smAmt" type="tel" inputmode="numeric"><label>Customer ID (2 letters)</label><input id="smId" maxlength="2" oninput="this.value=this.value.replace(/[^a-zA-Z]/g,\'\').toLowerCase()"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
+    f='<label>Recipient phone</label><input id="smPhone" type="tel" maxlength="13"><label>Amount</label><input id="smAmt" type="tel" inputmode="numeric"><label>Customer ID (2 letters)</label><input id="smId" maxlength="2" oninput="this.value=this.value.replace(/[^a-zA-Z]/g,\'\').toLowerCase()"><label>PIN</label><input id="smPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">';
   }
   $("smForm").innerHTML='<div class="card">'+f+'<button class="go" onclick="executeSendMoney()">Proceed</button></div>';
-  $("smLog").innerHTML=(SM.log||[]).slice(0,10).map(function(x){return '<div class="card row"><div><b>'+esc(x.type)+'</b><br><small style="color:var(--mute)">'+esc(x.to)+' · '+x.t+'</small></div><b>Ksh '+x.amt+'</b></div>'}).join("")||'<div class="card">No transfers yet.</div>';
+  $("smLog").innerHTML=(SM.log||[]).slice(0,10).map(function(x){return '<div class="card row"><div><b>'+esc(x.type)+'</b><br><small style="color:var(--mute)">'+esc(x.to)+' · '+x.t+'</small></div><b>'+money(x.amt)+'</b></div>'}).join("")||'<div class="card">No transfers yet.</div>';
 }
 function needPermissions(){
   if(!NATIVE)return true;
@@ -1009,8 +928,8 @@ async function executeSendMoney(){
     c="*334#";
     if(t=="p2p"){
       st=[
-        {t:"find",k:"send money|send to|transfer"},
-        {t:"find",k:"any network|other network|send to any"},
+        {t:"find",k:"send money|send to|transfer",n:"1"},
+        {t:"find",k:"any network|other network|send to any",n:"1"},
         {t:"text",v:to},
         {t:"text",v:String(am)},
         {t:"text",v:pin},
@@ -1031,8 +950,8 @@ async function executeSendMoney(){
     if(!bz||!ac||!am||!pin){alert("Fill all fields");return}
     c="*334#";
     st=[
-      {t:"find",k:"lipa na|lipa"},
-      {t:"find",k:"pay bill|paybill"},
+      {t:"find",k:"lipa na|lipa",n:"6"},
+      {t:"find",k:"pay bill|paybill",n:"1"},
       {t:"text",v:bz},
       {t:"text",v:ac},
       {t:"text",v:String(am)},
@@ -1045,8 +964,8 @@ async function executeSendMoney(){
     if(!til||!am||!pin){alert("Fill all fields");return}
     c="*334#";
     st=[
-      {t:"find",k:"lipa na|lipa"},
-      {t:"find",k:"buy goods|till|goods"},
+      {t:"find",k:"lipa na|lipa",n:"6"},
+      {t:"find",k:"buy goods|till|goods",n:"2"},
       {t:"text",v:til},
       {t:"text",v:String(am)},
       {t:"text",v:pin},
@@ -1058,8 +977,8 @@ async function executeSendMoney(){
     if(!ag||!sr||!am||!pin){alert("Fill all fields");return}
     c="*334#";
     st=[
-      {t:"find",k:"withdraw"},
-      {t:"find",k:"from agent|agent"},
+      {t:"find",k:"withdraw",n:"2"},
+      {t:"find",k:"from agent|agent",n:"1"},
       {t:"text",v:ag},
       {t:"text",v:sr},
       {t:"text",v:String(am)},
@@ -1099,50 +1018,21 @@ function label(t){
   return {p2p:"Send P2P",pochi:"Pochi",paybill:"Paybill",buygoods:"Buy Goods",till2:"Send Till",wa:"Withdraw"}[t]||t;
 }
 
-/* ========== AIRTIME ========== */
-function topupAirtime(){if(ACC)$("airTo").value=ACC.phone;show("airtime")}
-async function runAirtime(){
-  var to=normPn($("airTo").value),am=parseInt($("airAmt").value.replace(/\D/g,""));
-  if(!to||!am){alert("Fill all fields");return}
-  if(!needPermissions())return;
-  var ok=await askYN("Confirm","Buy Ksh "+am+" airtime for "+to+"?","Proceed");
-  if(!ok)return;
-  busy=true;openOv();
-  var c="*140*"+am+"*"+to+"#";
-  var st=[{t:"stop"}];
-  if(NATIVE){
-    var r=await ussd(c,st,simNo());
-    busy=false;
-    if(r.ok){
-      TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"airtime"});save("ck_tx",TX);
-      showBanner("Airtime sent.",'ok');
-    }else{
-      TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"FAILED",src:"airtime",why:r.text});save("ck_tx",TX);
-      showBanner("Failed: "+r.text,'bad');
-    }
-    ovClose();
-  }else{
-    await step("Dialing...",c);await wait(500);ovClose();busy=false;
-    TX.unshift({n:"Airtime "+am,num:to,p:am,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"airtime"});save("ck_tx",TX);
-  }
-}
-
 /* ========== BUNDLES ========== */
 function drawBundles(){}
 function chooseBundle(t){
-  if(t=="data"){
-    askC("Record Data offer","Data bundles change too often. Record your usual offer once and use it forever.","Record now",function(){go("record")});
-  }else if(t=="sms"){go("smsbundle")}
+  if(t=="data"){askC("Record Data offer","Data bundles change too often. Record your usual offer once and use it forever.","Record now",function(){go("record")});}
+  else if(t=="sms"){go("smsbundle")}
 }
 function drawSmsBundle(){
   $("smsRecipient").value=ACC?ACC.phone:"";
   var list=SMS_BUNDLES[SMS_PERIOD]||[];
   $("smsList").innerHTML=list.map(function(b,i){
     var on=SMS_SELECTED===i;
-    return '<button class="offer" aria-pressed="'+on+'" onclick="SMS_SELECTED='+i+';drawSmsBundle()"><div><strong>'+b.l+'</strong><span>Valid: '+b.exp+'</span></div><strong>Ksh '+b.p+'</strong></button>';
+    return '<button class="offer" aria-pressed="'+on+'" onclick="SMS_SELECTED='+i+';drawSmsBundle()"><div><strong>'+b.l+'</strong><span>Valid: '+b.exp+'</span></div><strong>'+money(b.p)+'</strong></button>';
   }).join("");
   if(SMS_SELECTED!==null&&SMS_SELECTED!==undefined){
-    $("smsList").innerHTML+='<button class="go" onclick="confirmSmsBundle()">Continue — Ksh '+list[SMS_SELECTED].p+'</button>';
+    $("smsList").innerHTML+='<button class="go" onclick="confirmSmsBundle()">Continue — '+money(list[SMS_SELECTED].p)+'</button>';
   }
 }
 function setSmsPeriod(p,el){SMS_PERIOD=p;SMS_SELECTED=null;document.querySelectorAll("#smsTabs button").forEach(function(b){b.classList.remove("active")});el.classList.add("active");drawSmsBundle()}
@@ -1157,7 +1047,7 @@ function confirmSmsBundle(){
 function showConfirm(){
   var c=CONFIRM_ACTION;
   $("confirmBody").innerHTML=
-    '<div class="card"><b>'+esc(c.name)+'</b><br><small style="color:var(--mute)">To '+esc(c.recipient)+'</small><div style="font-size:26px;font-weight:800;margin:12px 0">Ksh '+c.amount+'</div></div>'+
+    '<div class="card"><b>'+esc(c.name)+'</b><br><small style="color:var(--mute)">To '+esc(c.recipient)+'</small><div style="font-size:26px;font-weight:800;margin:12px 0">'+money(c.amount)+'</div></div>'+
     '<h2>Pay with</h2>'+
     '<div class="card" style="padding:0;overflow:hidden">'+
       '<button class="offer" onclick="runConfirm(\'airtime\')" style="border-radius:0;border:0;border-bottom:1px solid var(--line)"><div><strong>☎️ Airtime</strong><span>From SIM balance</span></div><strong>›</strong></button>'+
@@ -1173,20 +1063,20 @@ async function runConfirm(pay){
   var steps=[];
   if(pay=="mpesa"){
     steps=[
-      {t:"find",k:"gift sms|sms"},
-      {t:"find",k:c.period.toLowerCase()},
+      {t:"find",k:"gift sms|sms",n:"1"},
+      {t:"find",k:c.period.toLowerCase(),n:c.period=="Daily"?"1":c.period=="Weekly"?"2":"3"},
       {t:"find",k:c.name.toLowerCase()},
       {t:"number",v:c.recipient},
-      {t:"find",k:"mpesa|m-pesa"},
+      {t:"find",k:"mpesa|m-pesa",n:"2"},
       {t:"stop"}
     ];
   }else{
     steps=[
-      {t:"find",k:"gift sms|sms"},
-      {t:"find",k:c.period.toLowerCase()},
+      {t:"find",k:"gift sms|sms",n:"1"},
+      {t:"find",k:c.period.toLowerCase(),n:c.period=="Daily"?"1":c.period=="Weekly"?"2":"3"},
       {t:"find",k:c.name.toLowerCase()},
       {t:"number",v:c.recipient},
-      {t:"find",k:"airtime"},
+      {t:"find",k:"airtime",n:"1"},
       {t:"stop"}
     ];
   }
@@ -1207,12 +1097,13 @@ async function runConfirm(pay){
     TX.unshift({n:"SMS "+c.name,num:c.recipient,p:c.amount,t:stamp(),d:0,ts:Date.now(),st:"SUCCESS",src:"sms"});save("ck_tx",TX);
     show("home");drawHome();
   }
-  }
-  /* ========== TILL ========== */
+}
+
+/* ========== TILL ========== */
 function drawTill(){
   if(ACC&&ACC.initials&&!$("tillId").value)$("tillId").value=ACC.initials;
   var log=load("ck_till",[]);
-  $("tillLog").innerHTML=log.slice(0,10).map(function(x){return '<div class="card row"><div><b>'+esc(x.to)+'</b><br><small style="color:var(--mute)">'+x.t+'</small></div><b>Ksh '+x.amt+'</b></div>'}).join("")||'<div class="card">No transfers yet.</div>';
+  $("tillLog").innerHTML=log.slice(0,10).map(function(x){return '<div class="card row"><div><b>'+esc(x.to)+'</b><br><small style="color:var(--mute)">'+x.t+'</small></div><b>'+money(x.amt)+'</b></div>'}).join("")||'<div class="card">No transfers yet.</div>';
 }
 async function runTill(){
   if(busy)return;
@@ -1220,7 +1111,7 @@ async function runTill(){
   var to=normPn($("tillTo").value),am=parseInt($("tillAmt").value.replace(/\D/g,""));
   var id=$("tillId").value.trim(),pin=$("tillPin").value;
   if(!to||!am||!/^[A-Za-z]{2}$/.test(id)||!pin){alert("Fill all fields");return}
-  var ok=await askYN("Confirm","Send Ksh "+am+" to "+to+"?","Proceed");
+  var ok=await askYN("Confirm","Send "+money(am)+" to "+to+"?","Proceed");
   if(!ok)return;
   busy=true;openOv();
   var c="*234*2*5822712*2*3*"+to+"*"+am+"#";
@@ -1240,9 +1131,8 @@ async function runTill(){
   }else{
     await step("Dialing...",c);await wait(500);ovClose();busy=false;
   }
-}
-
-/* ========== RECORD ========== */
+  }
+  /* ========== RECORD ========== */
 function setRecCat(c,el){REC_CAT=c;document.querySelectorAll("#recCat button").forEach(function(b){b.classList.remove("active")});el.classList.add("active")}
 function drawRecord(){
   $("recStatus").innerHTML=RECORDING?
@@ -1254,17 +1144,37 @@ function startRecording(){
   var base=$("recBase").value.trim();
   if(!name){alert("Enter a function name");return}
   if(!base){alert("Enter the base USSD code");return}
-  RECORDING=true;REC_STEPS=[];
+  RECORDING=true;REC_STEPS=[];REC_CAPTURED=[];REC_LAST_SCREEN="";
   REC_BASE=base;
   drawRecord();
-  if(NATIVE){Android.ussd("rec_"+Date.now(),base,"[]",simNo(),120)}
+  if(NATIVE){
+    try{
+      if(Android.startRecord)Android.startRecord(base,simNo());
+      Android.ussd("rec_"+Date.now(),base,"[]",simNo(),120);
+    }catch(e){}
+  }
+}
+function captureRecordStep(screenText){
+  if(!RECORDING)return;
+  if(!screenText||screenText===REC_LAST_SCREEN)return;
+  REC_LAST_SCREEN=screenText;
+  REC_CAPTURED.push(screenText);
 }
 function stopRecording(){
   RECORDING=false;
+  if(NATIVE){try{if(Android.stopRecord)Android.stopRecord()}catch(e){}}
   var name=$("recName").value.trim();
   var base=$("recBase").value.trim();
+  var steps=[];
+  REC_CAPTURED.forEach(function(screen){
+    var lines=screen.split("\n").map(function(l){return l.trim()}).filter(function(l){return l.length});
+    lines.forEach(function(line){
+      var m=line.match(/^\s*(\d+)\s*[:.)\-]\s*(.+)$/);
+      if(m){steps.push({t:"find",k:m[2].substring(0,40),n:m[1]});}
+    });
+  });
   if(RE_EDIT_INDEX>-1){
-    CUSTOM[RE_EDIT_INDEX]={name:name,cat:REC_CAT,base:base,steps:REC_STEPS};
+    CUSTOM[RE_EDIT_INDEX]={name:name,cat:REC_CAT,base:base,steps:steps.length?steps:REC_STEPS};
     save("ck_custom",CUSTOM);
     showBanner("Flow updated: "+name,'ok');
     var i=RE_EDIT_INDEX;
@@ -1275,7 +1185,7 @@ function stopRecording(){
     setTimeout(function(){openFlow(i)},400);
     return;
   }
-  CUSTOM.push({name:name,cat:REC_CAT,base:base,steps:REC_STEPS});
+  CUSTOM.push({name:name,cat:REC_CAT,base:base,steps:steps.length?steps:REC_STEPS});
   save("ck_custom",CUSTOM);
   $("recName").value="";$("recBase").value="";
   drawRecord();
@@ -1299,6 +1209,7 @@ function openFlow(i){
     var txt=s.t||"?";
     if(s.k)txt+=': find "'+s.k+'"';
     if(s.v)txt+=': type "'+s.v+'"';
+    if(s.n)txt+=' → press '+s.n;
     if(s.p)txt+=': price '+s.p;
     return '<div class="card" style="padding:10px"><b>Step '+(k+1)+'</b><br><small>'+esc(txt)+'</small></div>';
   }).join(""):'<div class="card">No steps recorded.</div>';
@@ -1341,15 +1252,79 @@ function editMyFlow(){
     go("record");
     setTimeout(function(){startRecording()},300);
   });
-  }
-  /* ========== HISTORY ========== */
+}
+
+/* ========== HISTORY ========== */
+function setHistFilter(f,el){HIST_FILTER=f;document.querySelectorAll("#histFilters button").forEach(function(b){b.classList.remove("active")});el.classList.add("active");drawHistory()}
 function drawHistory(){
   var tx=TX.filter(function(x){return HIST_FILTER=="all"||(HIST_FILTER=="success"&&x.st=="SUCCESS")||(HIST_FILTER=="failed"&&x.st=="FAILED")});
+  if(!tx.length){$("histList").innerHTML='<div class="card">No history yet.</div>';return}
   $("histList").innerHTML=tx.slice(0,50).map(function(t){
-    return '<div class="card row"><div><b>'+esc(t.n||"Shortcut")+'</b><br><small style="color:var(--mute)">'+esc(t.num||"")+' · '+(t.d?t.d+'d ago':'Today')+', '+t.t+'</small></div><div style="text-align:right"><b>Ksh '+t.p+'</b><br><span class="tag'+(t.st=="FAILED"?" fail":"")+'">'+t.st+'</span></div></div>';
-  }).join("")||'<div class="card">No history yet.</div>';
+    var idx=TX.indexOf(t);
+    var expanded=HISTORY_OPEN===idx;
+    var selected=HIST_SELECTED.indexOf(idx)>-1;
+    var cls="history-item"+(selected?" selected":"");
+    var body="";
+    if(expanded){
+      body='<div class="history-body">'+
+        '<div class="row" style="padding:6px 0"><small style="color:var(--mute)">Phone</small><b>'+esc(t.num||"-")+'</b></div>'+
+        '<div class="row" style="padding:6px 0"><small style="color:var(--mute)">M-PESA Code</small><b>'+esc(t.code||"-")+'</b></div>'+
+        '<div class="row" style="padding:6px 0"><small style="color:var(--mute)">Type</small><b>'+esc(t.src||"normal")+'</b></div>'+
+        '<div class="row" style="padding:6px 0"><small style="color:var(--mute)">Amount</small><b>'+money(t.p)+'</b></div>'+
+        '<div class="row" style="padding:6px 0"><small style="color:var(--mute)">Time</small><b>'+esc(t.t||"")+'</b></div>'+
+        (!t.st||t.st!="SUCCESS"?'<div class="row" style="padding:6px 0"><small style="color:var(--mute)">Reason</small><b>'+esc(t.why||"Failed")+'</b></div>':'')+
+        '<div class="g2" style="margin-top:10px">'+
+          (t.st=="FAILED"?'<button class="go" style="margin:0;font-size:13px" onclick="event.stopPropagation();retryTx('+idx+')">Retry</button>':'')+
+          (t.st!="SUCCESS"?'<button class="go" style="margin:0;font-size:13px;background:#2e7d32" onclick="event.stopPropagation();markOkTx('+idx+')">Mark Success</button>':'')+
+        '</div>'+
+        '<button class="go" style="background:#c0392b;margin-top:8px;font-size:13px" onclick="event.stopPropagation();deleteTx('+idx+')">Delete</button>'+
+      '</div>';
+    }
+    return '<div class="'+cls+'" data-idx="'+idx+'" onclick="toggleHistExpand('+idx+')" oncontextmenu="event.preventDefault();longPressHist('+idx+');return false;">'+
+      '<div class="row">'+
+        '<div><b>'+esc(t.n||"Shortcut")+'</b><br><small style="color:var(--mute)">'+esc(t.num||"")+' · '+(t.d?t.d+'d ago':'Today')+', '+t.t+'</small></div>'+
+        '<div style="text-align:right"><b>'+money(t.p)+'</b><br><span class="tag'+(t.st=="FAILED"?" fail":"")+'">'+(t.st||"")+'</span></div>'+
+      '</div>'+body+
+    '</div>';
+  }).join("");
 }
-function setHistFilter(f,el){HIST_FILTER=f;document.querySelectorAll("#histFilters button").forEach(function(b){b.classList.remove("active")});el.classList.add("active");drawHistory()}
+function toggleHistExpand(i){
+  if(HIST_SELECTED.length){toggleHistSelect(i);return}
+  HISTORY_OPEN=HISTORY_OPEN===i?null:i;
+  drawHistory();
+}
+function longPressHist(i){
+  if(HIST_SELECTED.indexOf(i)==-1)HIST_SELECTED.push(i);
+  else HIST_SELECTED=HIST_SELECTED.filter(function(x){return x!=i});
+  drawHistory();
+}
+function toggleHistSelect(i){
+  if(HIST_SELECTED.indexOf(i)==-1)HIST_SELECTED.push(i);
+  else HIST_SELECTED=HIST_SELECTED.filter(function(x){return x!=i});
+  drawHistory();
+}
+function retryTx(i){
+  var t=TX[i];if(!t)return;
+  SM.type=t.src||"p2p";
+  go("sendmoney");
+}
+function markOkTx(i){
+  if(!TX[i])return;
+  TX[i].st="SUCCESS";
+  save("ck_tx",TX);
+  showBanner("Marked as success.",'ok');
+  HISTORY_OPEN=null;
+  drawHistory();
+}
+function deleteTx(i){
+  if(!TX[i])return;
+  TX.splice(i,1);
+  save("ck_tx",TX);
+  HISTORY_OPEN=null;
+  HIST_SELECTED=[];
+  showBanner("Deleted.",'ok');
+  drawHistory();
+}
 
 /* ========== SEARCH ========== */
 function doSearch(){
@@ -1359,7 +1334,7 @@ function doSearch(){
     return ((t.n||"")+" "+(t.num||"")+" "+(t.p||"")+" "+(t.src||"")).toLowerCase().indexOf(q)>-1;
   });
   $("searchResults").innerHTML=r.length?r.slice(0,50).map(function(t){
-    return '<div class="card row"><div><b>'+esc(t.n||"Shortcut")+'</b><br><small style="color:var(--mute)">'+esc(t.num||"")+' · '+t.t+'</small></div><div style="text-align:right"><b>Ksh '+t.p+'</b><br><span class="tag'+(t.st=="FAILED"?" fail":"")+'">'+t.st+'</span></div></div>';
+    return '<div class="card row"><div><b>'+esc(t.n||"Shortcut")+'</b><br><small style="color:var(--mute)">'+esc(t.num||"")+' · '+t.t+'</small></div><div style="text-align:right"><b>'+money(t.p)+'</b><br><span class="tag'+(t.st=="FAILED"?" fail":"")+'">'+t.st+'</span></div></div>';
   }).join(""):'<div class="card">No matches.</div>';
 }
 
@@ -1398,6 +1373,9 @@ function drawStats(){
 function drawYou(){
   if(!ACC){$("yb").innerHTML='<div class="card">No profile. Please sign up.</div>';return}
   var ini=ACC.initials?ACC.initials.toUpperCase():"CK";
+  var avatarHTML=ACC.photo?
+    '<div class="avatar" id="youAv" onclick="pickPhoto()" style="margin:0 auto 12px;width:84px;height:84px;font-size:30px;background-image:url(\''+ACC.photo+'\');background-size:cover;background-position:center;position:relative;cursor:pointer"><span style="position:absolute;bottom:-2px;right:-2px;background:var(--brand);color:#0E1412;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px">📷</span></div>':
+    '<div class="avatar" id="youAv" onclick="pickPhoto()" style="margin:0 auto 12px;width:84px;height:84px;font-size:30px;position:relative;cursor:pointer">'+ini+'<span style="position:absolute;bottom:-2px;right:-2px;background:var(--brand);color:#0E1412;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px">📷</span></div>';
   var rows=[
     ["Name",ACC.name],
     ["Business",ACC.biz||"Not set"],
@@ -1408,7 +1386,7 @@ function drawYou(){
   ];
   $("yb").innerHTML=
     '<div class="card" style="text-align:center;background:linear-gradient(#0F2A22,#0A1F17);border:0;padding:22px">'+
-      '<div class="avatar" style="margin:0 auto 12px;width:84px;height:84px;font-size:30px">'+ini+'</div>'+
+      avatarHTML+
       '<b style="font-size:20px;display:block;margin-bottom:4px">'+esc(ACC.name)+'</b>'+
       '<small style="color:var(--mute)">'+esc(ACC.biz||"CK Shortcut user")+'</small>'+
     '</div>'+
@@ -1422,6 +1400,17 @@ function drawYou(){
       '<button class="go" style="margin:0;background:#c0392b" onclick="confirmLogout()">Log out</button>'+
     '</div>';
 }
+function pickPhoto(){
+  askC("Change photo","Choose where to pick your profile picture from.","Open Photos",function(){
+    if(NATIVE)Android.askPhotos&&Android.askPhotos();
+  });
+}
+window.onPhotoPicked=function(b64){
+  if(!b64||!ACC)return;
+  ACC.photo=b64;save("ck_acct",ACC);
+  drawYou();drawHome();
+  showBanner("Photo updated.",'ok');
+};
 
 /* ========== SETTINGS ========== */
 function drawSet(){
@@ -1429,6 +1418,9 @@ function drawSet(){
   $("setbody").innerHTML=
     '<div class="card"><b>SIM routing</b><label>Dial USSD with</label>'+
       '<div class="sm">'+["SIM 1","SIM 2"].map(function(x){return '<button class="'+(SIMMODE==x?'active':'')+'" onclick="SIMMODE=\''+x+'\';save(\'ck_simmode\',SIMMODE);drawSet()">'+x+'</button>'}).join("")+'</div>'+
+    '</div>'+
+    '<div class="card"><b>Currency</b><label>Display currency</label>'+
+      '<div class="sm">'+["Ksh","USD","EUR","GBP","TZS","UGX"].map(function(c){return '<button class="'+(CURRENCY==c?'active':'')+'" onclick="CURRENCY=\''+c+'\';save(\'ck_currency\',CURRENCY);drawSet();drawHome()">'+c+'</button>'}).join("")+'</div>'+
     '</div>'+
     '<div class="card"><b>Haptics</b><label>Handoff vibration</label>'+
       '<div class="sm">'+
@@ -1438,7 +1430,7 @@ function drawSet(){
       '</div>'+
       '<button class="chip" style="width:100%;padding:10px;margin-top:8px" onclick="if(NATIVE)Android.vibrate(VIBE_HANDOFF)">Preview</button>'+
     '</div>'+
-    '<div class="card"><b>Fuliza limit</b><label>Current limit (Ksh)</label>'+
+    '<div class="card"><b>Fuliza limit</b><label>Current limit</label>'+
       '<input id="fulizaSet" type="tel" value="'+FULIZA_LIMIT+'">'+
       '<button class="go" onclick="FULIZA_LIMIT=parseInt($(\'fulizaSet\').value)||0;save(\'ck_fuliza_limit\',FULIZA_LIMIT);drawHome();showBanner(\'Fuliza limit saved.\',\'ok\')">Save</button>'+
     '</div>'+
@@ -1500,6 +1492,7 @@ window.drainSms=function(){
   }catch(e){}
 };
 window.refreshSetup=function(){if(document.body.getAttribute("data-pg")=="setup")drawSetup()};
+window.captureRecordStep=captureRecordStep;
 
 /* ========== DIALOGS ========== */
 function openOv(f){VIS=f||SHOWU;$("ov").classList.add("show");$("dn").style.display="none"}
@@ -1508,6 +1501,29 @@ async function step(t,inp){$("scr").textContent=t;$("inp").textContent="";$("nt"
 function askC(t,p,l,fn,no){CFN=fn;CFNO=no||null;$("cft").textContent=t;$("cfp").innerHTML=p;$("cfy").textContent=l;$("cf").classList.add("show")}
 function cfx(v){$("cf").classList.remove("show");var f=CFN,c=CFNO;CFN=null;CFNO=null;if(v&&f)f();else if(!v&&c)c()}
 function askYN(t,p,l){return new Promise(function(res){askC(t,p,l,function(){res(true)},function(){res(false)})})}
+
+/* ========== PULL TO REFRESH ========== */
+var TOUCH_START=0,TOUCH_PULLING=false;
+document.addEventListener("touchstart",function(e){
+  if(document.body.getAttribute("data-pg")!="home")return;
+  if(window.scrollY<=0)TOUCH_START=e.touches[0].clientY;
+  else TOUCH_START=0;
+},{passive:true});
+document.addEventListener("touchmove",function(e){
+  if(!TOUCH_START)return;
+  var pull=e.touches[0].clientY-TOUCH_START;
+  if(pull>90&&!TOUCH_PULLING){
+    TOUCH_PULLING=true;
+    var ind=$("pullInd");if(ind)ind.classList.add("show");
+  }
+},{passive:true});
+document.addEventListener("touchend",function(){
+  if(TOUCH_PULLING){
+    refreshAll();
+    TOUCH_PULLING=false;
+    TOUCH_START=0;
+  }
+});
 
 /* ========== BOOT ========== */
 document.addEventListener("DOMContentLoaded",function(){
@@ -1521,8 +1537,10 @@ document.addEventListener("DOMContentLoaded",function(){
   FULIZA=load("ck_fuliza",0);
   com=load("ck_mpesa_bal",0);
   air=load("ck_air",0);
-  HID=load("ck_hid",{air:1,com:1,tok:1});
-  FULIZA_HIDDEN=load("ck_fuliza_hidden",true);
+  HID=load("ck_hid",{air:1,com:1});
+  CURRENCY=load("ck_currency","Ksh");
+  CLOCK_24H=load("ck_clock_24",true);
+  CLOCK_SECONDS=load("ck_clock_sec",true);
   document.body.setAttribute("data-pg","home");
   var li=load("ck_logged_in",false);
   if(!li||!SAVED){
@@ -1532,14 +1550,20 @@ document.addEventListener("DOMContentLoaded",function(){
     return;
   }
   AUTH=true;ACC=SAVED;
+  if(NATIVE){try{Android.keepAlive(true)}catch(e){}}
   var sd=load("ck_setup_done",false);
   if(!SAVED.pin){show("setup");drawSetup();return}
   if(!sd){show("setup");drawSetup();return}
   if(!FULIZA_LIMIT){show("fuliza");return}
   drawHome();
   showLock();
+  setTimeout(function(){refreshAll()},1500);
+  document.addEventListener("visibilitychange",function(){
+    if(!document.hidden&&ACC){setTimeout(function(){refreshAll()},500)}
+  });
 });
 setInterval(function(){if(ACC&&document.body.getAttribute("data-pg")=="home")drawHome()},60000);
 </script>
 </body>
 </html>
+      
