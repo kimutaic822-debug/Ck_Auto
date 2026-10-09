@@ -401,6 +401,14 @@ body[data-pg="auth"] nav,body[data-pg="auth"] .ham,body[data-pg="setup"] nav,bod
   <div id="setbody"></div>
   <button class="go" style="background:#c0392b" onclick="confirmLogout()">Log out</button>
 </section>
+  <section id="s-recover">
+  <h2 style="margin-top:8px">Recover your PIN</h2>
+  <p class="note">Enter your ID number, phone number and year of birth.</p>
+  <label>ID number</label><input id="recovId" type="tel" maxlength="12">
+  <label>Phone number</label><input id="recovPhone" type="tel" maxlength="13">
+  <label>Year of birth</label><input id="recovDob" type="tel" maxlength="4">
+  <button class="go" onclick="doRecover()">Recover</button>
+  </section>
 
 <section id="s-stub">
   <h2 style="margin-top:8px">Coming soon</h2>
@@ -563,8 +571,20 @@ async function pinPress(v){
     },150);
   }
 }
-function forgotPin(){askC("Recovery","Enter your ID, phone number and year of birth to reset your PIN.","Continue",function(){go("stub")})}
-
+function forgotPin(){go("recover")}
+async function doRecover(){
+  var id=$("recovId").value.trim();
+  var ph=normPn($("recovPhone").value);
+  var dob=$("recovDob").value.trim();
+  if(!id||!ph||!/^\d{4}$/.test(dob)){showBanner("Fill all fields correctly",'bad');return}
+  var key=id.slice(-3)+ph.slice(-2)+(dob[2]||"0");
+  var h=await sha(key);
+  if(h!==SAVED.recHash){showBanner("Details don't match our records",'bad');return}
+  SAVED.pin=null;save("ck_acct",SAVED);
+  showBanner("Verified. Set a new PIN.",'ok');
+  $("lockScreen").style.display="none";
+  showCreatePin("create");
+  }
 /* ========== AUTH ========== */
 function aerr(m){var e=$("aue");if(e)e.textContent=m}
 function setAT(v){AUTHTAB=v;drawAuth()}
@@ -1471,6 +1491,10 @@ window.onUssdDone=function(id,ok,t){
   var f=UCB[id];delete UCB[id];
   if(f)f({ok:ok,text:t});
   if(ok&&NATIVE){try{Android.vibrate(VIBE_HANDOFF)}catch(e){}}
+};
+  window.onFingerprint=function(ok){
+  if(ok){FAILS=0;PIN="";updatePinDots();hideLock();}
+  else{$("lockWho").textContent="Enter your PIN";}
 };
 window.onUssdAsk=function(id,t){
   if(NATIVE){try{Android.vibrate(VIBE_HANDOFF)}catch(e){}}
