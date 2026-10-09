@@ -1,4 +1,4 @@
-package com.ckshortcut.app
+package com.ckauto.app
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
